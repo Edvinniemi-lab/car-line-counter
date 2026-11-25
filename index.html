@@ -471,6 +471,26 @@ a:hover { color: #FFFFFF; }
 .jq .jq-btn { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 2px; gap: 8px; }
 .jq .jq-btn--sm { font-size: 13px; letter-spacing: 1.4px; }
 .jq-kicker .jq-sample { color: var(--dir-muted); }
+
+/* v4: trend sparkline, quiet-hours hint, "you can still make it today", notify */
+.jq .jq-spark { display: block; margin-top: 5px; overflow: visible; }
+.jq .jq-stat .jq-spark { margin-top: 8px; }
+.jq-quiet-hint { display: block; font-size: 12px; color: var(--dir-muted); margin-top: 3px; width: 100%; }
+.jq-quiet-hint::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--dir-blue-lite); margin-right: 6px; vertical-align: 1px; opacity: .8; }
+.jq-quiet-line { margin: 10px 0 0; font-size: 13px; color: var(--dir-muted); }
+.jq-quiet-line::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--dir-blue-lite); margin-right: 8px; vertical-align: 1px; }
+.jq-badge--still { border-color: var(--dir-green); color: var(--dir-white); }
+.jq-still { border-left: 3px solid var(--dir-green); background: rgba(61,154,95,.12); border-radius: 6px; padding: 10px 12px; margin: 0 0 12px; font-size: 13px; color: var(--dir-muted); }
+.jq-still strong { display: block; font-family: 'Oswald', sans-serif; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--dir-white); font-size: 15px; margin-bottom: 2px; }
+.jq-notify { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 0 16px 16px; }
+.jq .jq-notify .jq-btn { min-height: 40px; font-size: 12px; letter-spacing: 1px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; }
+.jq-notify-thr { display: inline-flex; align-items: center; gap: 6px; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--dir-muted); }
+.jq-notify-thr select { background: var(--dir-bg-deep); color: var(--dir-white); border: 1px solid var(--dir-line); border-radius: 6px; min-height: 40px; padding: 0 8px; font: 500 13px 'Roboto', sans-serif; }
+.jq-notify--on span { font-size: 13px; color: var(--dir-white); }
+.jq-notify--on span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--dir-green); margin-right: 8px; vertical-align: 1px; box-shadow: 0 0 0 3px rgba(61,154,95,.25); }
+.jq-toast { position: fixed; left: 50%; bottom: 60px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; background: #1E1E1E; color: #fff; border-left: 3px solid #3D9A5F; border-radius: 6px; padding: 12px 16px; font: 400 14px/1.4 'Roboto', sans-serif; max-width: min(92vw, 420px); z-index: 90; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+.jq-toast.on { opacity: 1; transform: translate(-50%, 0); }
+@media (min-width: 721px) { .jq-notify { padding: 0 28px 20px; } }
 </style>
 <style>.demo-bar { position: sticky; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; gap: 14px; align-items: center; justify-content: space-between;
   padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); background: rgba(16,41,183,0.95); color: #fff; font: 400 12px/1.3 'Roboto', sans-serif; }
@@ -513,44 +533,165 @@ html { scroll-behavior: smooth; }
     ul.how { padding-left: 18px; margin: 0; } ul.how li { margin-bottom: 6px; }
   
 }</style>
-<style>:where(#v-henkilosto) {
-& { --blue:#1029B7; --blue2:#3D57E0; --bg:#0F0F0F; --card:#151515; --line:#262626; --text:#D8D8D8; --muted:rgba(255,255,255,.7); --green:#3D9A5F; --yellow:#D4A017; --red:#C4453C; --off:#8A8A8A; }
-    * { box-sizing: border-box; }
-& { margin: 0; background: var(--bg); color: var(--text); font: 400 16px/1.45 'Roboto', sans-serif; }
-    .wrap { max-width: 640px; margin: 0 auto; padding: 18px 14px 80px; }
-    h1 { font: 700 26px/1.1 'Oswald', sans-serif; text-transform: uppercase; color: #fff; margin: 4px 0 6px; }
-    .kicker { font: 400 12px 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--blue2); margin: 0; }
-    .lead { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-top: 2px solid var(--blue); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
-    .pin input { width: 100%; font: 700 34px 'Oswald', sans-serif; letter-spacing: 12px; text-align: center; padding: 12px; border-radius: 6px; border: 2px solid var(--line); background: #0B0B0B; color: #fff; }
-    .pin input:focus { outline: none; border-color: var(--blue2); }
-    .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
-    button { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1.6px; cursor: pointer; border-radius: 6px; }
-    .keys button { min-height: 64px; font-size: 26px; background: #1C1C1C; color: #fff; border: 1px solid var(--line); }
-    .keys button:active { background: var(--blue); }
-    .primary { width: 100%; min-height: 56px; margin-top: 12px; font-size: 17px; background: var(--blue); color: #fff; border: 2px solid var(--blue); }
-    .err { color: #ff8a80; min-height: 22px; margin: 8px 0 0; font-size: 14px; }
-    .site-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-    .site-name { font: 700 22px/1.1 'Oswald', sans-serif; text-transform: uppercase; color: #fff; }
-    .sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
-    .src { font: 400 11px 'Oswald', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; border: 2px solid var(--green); color: var(--green); border-radius: 6px; padding: 5px 8px; white-space: nowrap; }
-    .src--override { border-color: var(--yellow); color: var(--yellow); }
-    .src--off { border-color: var(--off); color: var(--off); }
-    .now { display: flex; align-items: baseline; gap: 10px; margin: 12px 0 4px; }
-    .now b { font: 700 44px/1 'Oswald', sans-serif; color: #fff; }
-    .now span { font: 400 12px 'Oswald', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); }
-    .camera { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
-    .camera strong { color: #fff; font-weight: 500; }
-    .choices { display: grid; gap: 10px; }
-    .choices button { min-height: 64px; font-size: 26px; font-weight: 700; background: #1C1C1C; color: #fff; border: 2px solid var(--line); }
-    .choices button.sel { background: var(--blue); border-color: var(--blue2); }
-    .auto { width: 100%; min-height: 54px; margin-top: 10px; font-size: 15px; background: transparent; color: #fff; border: 2px solid var(--blue2); }
-    .auto[disabled] { opacity: .4; cursor: default; }
-    .small { font-size: 12px; color: var(--muted); margin-top: 8px; }
-    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 64px; background: #222; color: #fff; padding: 12px 16px; border-radius: 6px; border-left: 3px solid var(--green); font-size: 15px; display: none; z-index: 60; }
-    .logout { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 10px 0; text-decoration: underline; text-transform: none; letter-spacing: 0; font-family: 'Roboto', sans-serif; }
-  
-}</style>
+<style>/* Staff + admin panels. Dark brand look; all classes prefixed pn- so the single-file build can share one document. */
+.pn-page { --blue:#1029B7; --blue2:#3D57E0; --bg:#0F0F0F; --card:#151515; --card2:#1C1C1C; --line:#262626; --text:#D8D8D8; --muted:rgba(255,255,255,.7);
+  --green:#3D9A5F; --yellow:#D4A017; --red:#C4453C; --off:#8A8A8A; background: var(--bg); color: var(--text); font: 400 16px/1.45 'Roboto', sans-serif; min-height: calc(100vh - 40px); }
+.pn-page *, .pn-page *::before, .pn-page *::after { box-sizing: border-box; }
+.pn-page p { margin: 0; }
+.pn-wrap { max-width: 640px; margin: 0 auto; padding: 18px 14px 40px; }
+.pn-wrap--wide { max-width: 1400px; }
+.pn-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.pn-kicker { font: 400 12px 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--blue2); margin-bottom: 4px !important; }
+.pn-station { font: 700 44px/1 'Oswald', sans-serif; text-transform: uppercase; color: #fff; margin: 0 0 6px; letter-spacing: .01em; }
+.pn-h1 { font: 700 30px/1.05 'Oswald', sans-serif; text-transform: uppercase; color: #fff; margin: 0 0 6px; }
+.pn-h2 { font: 700 18px/1.2 'Oswald', sans-serif; text-transform: uppercase; color: #fff; margin: 26px 0 10px; letter-spacing: .03em; }
+.pn-lead { color: var(--muted); font-size: 14px; margin-bottom: 16px !important; }
+.pn-card { background: var(--card); border: 1px solid var(--line); border-top: 2px solid var(--blue); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+.pn-page button { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1.4px; cursor: pointer; border-radius: 6px; color: #fff; }
+.pn-pin input { width: 100%; font: 700 34px 'Oswald', sans-serif; letter-spacing: 12px; text-align: center; padding: 12px; border-radius: 6px; border: 2px solid var(--line); background: #0B0B0B; color: #fff; }
+.pn-pin input:focus { outline: none; border-color: var(--blue2); }
+.pn-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.pn-keys button { min-height: 64px; font-size: 26px; background: var(--card2); border: 1px solid var(--line); }
+.pn-keys button:active { background: var(--blue); }
+.pn-primary { width: 100%; min-height: 56px; margin-top: 12px; font-size: 17px; background: var(--blue); border: 2px solid var(--blue); }
+.pn-err { color: #ff8a80; min-height: 22px; margin-top: 8px !important; font-size: 14px; }
+.pn-lang { min-width: 48px; min-height: 40px; background: transparent; border: 1px solid #333; font-size: 14px; }
+.pn-now { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 6px; flex-wrap: wrap; }
+.pn-now b { font: 700 64px/1 'Oswald', sans-serif; color: #fff; }
+.pn-now span { font: 400 13px 'Oswald', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); }
+.pn-mode { border-radius: 6px; padding: 12px 14px; margin: 10px 0 12px; background: #101010; border: 1px solid var(--line); border-left: 3px solid var(--green); font-size: 15px; color: #fff; }
+.pn-mode small { display: block; color: var(--muted); font-size: 13px; margin-top: 3px; }
+.pn-mode--learning { border-left-color: var(--yellow); }
+.pn-mode--override { border-left-color: var(--blue2); }
+.pn-mode--off { border-left-color: var(--off); }
+.pn-bar { height: 6px; background: #222; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.pn-bar i { display: block; height: 100%; background: var(--yellow); }
+.pn-lifts { display: flex; gap: 6px; margin: 4px 0 12px; }
+.pn-lift { width: 24px; height: 24px; border-radius: 4px; border: 2px solid var(--off); opacity: .6; }
+.pn-lift--busy { background: var(--blue2); border-color: var(--blue2); opacity: 1; }
+.pn-lift--free { border-color: var(--green); opacity: 1; }
+.pn-choices { display: grid; gap: 10px; }
+.pn-choices button { min-height: 68px; font-size: 28px; font-weight: 700; background: var(--card2); border: 2px solid var(--line); }
+.pn-choices button.sel { background: var(--blue); border-color: var(--blue2); }
+.pn-ghost { width: 100%; min-height: 54px; margin-top: 10px; font-size: 15px; background: transparent; border: 2px solid var(--blue2); }
+.pn-ghost[disabled] { opacity: .4; cursor: default; }
+.pn-small { font-size: 12px; color: var(--muted); }
+.pn-logout { background: none !important; border: 0; color: var(--muted) !important; font: 400 13px 'Roboto', sans-serif !important; text-transform: none !important; letter-spacing: 0 !important; padding: 10px 0; text-decoration: underline; }
+.pn-toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 64px; background: #222; color: #fff; padding: 12px 16px; border-radius: 6px; border-left: 3px solid var(--green); font-size: 15px; display: none; z-index: 70; max-width: 90vw; }
+.pn-modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: flex-end; justify-content: center; z-index: 80; padding: 16px; }
+.pn-modal.on { display: flex; }
+.pn-modal-box { width: 100%; max-width: 480px; background: var(--card); border: 1px solid var(--line); border-top: 2px solid var(--blue); border-radius: 8px; padding: 20px 16px 16px; }
+.pn-modal-q { font: 700 24px/1.15 'Oswald', sans-serif; text-transform: uppercase; color: #fff; margin-bottom: 6px !important; }
+.pn-modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.pn-modal-btns button { min-height: 56px; font-size: 16px; background: var(--card2); border: 2px solid var(--line); }
+.pn-modal-btns .pn-yes { background: var(--blue); border-color: var(--blue2); }
+@media (min-width: 721px) { .pn-modal { align-items: center; } }
+/* admin */
+.pn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pn-seg button, .pn-btn { min-height: 44px; padding: 0 14px; font-size: 13px; background: var(--card2); border: 2px solid var(--line); }
+.pn-seg button.on, .pn-btn.on { background: var(--blue); border-color: var(--blue2); }
+.pn-btn--danger { border-color: #5a2320; }
+.pn-grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .pn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1300px) { .pn-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pn-grid .pn-card { margin: 0; }
+.pn-site-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.pn-site-name { font: 700 24px/1.1 'Oswald', sans-serif; text-transform: uppercase; color: #fff; }
+.pn-pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.pn-pill { font: 400 10px 'Oswald', sans-serif; letter-spacing: 1.4px; text-transform: uppercase; border: 2px solid currentColor; border-radius: 6px; padding: 3px 6px; white-space: nowrap; }
+.pn-pill--green { color: var(--green); } .pn-pill--yellow { color: var(--yellow); } .pn-pill--red { color: var(--red); } .pn-pill--off { color: var(--off); } .pn-pill--blue { color: var(--blue2); }
+.pn-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 10px; margin: 12px 0 4px; }
+.pn-metric b { display: block; font: 700 24px/1.1 'Oswald', sans-serif; color: #fff; }
+.pn-metric b small { font-size: 14px; font-weight: 400; color: var(--muted); }
+.pn-metric span { font: 400 10px 'Oswald', sans-serif; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+.pn-label { font: 400 11px 'Oswald', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); margin: 12px 0 6px !important; }
+.pn-page details { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
+.pn-page summary { cursor: pointer; font: 400 13px 'Oswald', sans-serif; letter-spacing: 1.4px; text-transform: uppercase; color: #fff; min-height: 36px; display: flex; align-items: center; }
+.pn-hours { display: grid; grid-template-columns: 34px 1fr 1fr auto; gap: 6px 8px; align-items: center; margin: 8px 0; font-size: 14px; }
+.pn-page input[type=time], .pn-page input[type=text], .pn-page input[type=number] { width: 100%; min-height: 40px; background: #0B0B0B; color: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 400 15px 'Roboto', sans-serif; color-scheme: dark; }
+.pn-hours label { display: flex; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.pn-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pn-table th, .pn-table td { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.pn-table th:first-child, .pn-table td:first-child { text-align: left; }
+.pn-table th { font: 400 11px 'Oswald', sans-serif; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+.pn-scroll { overflow-x: auto; }
+.pn-log { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.pn-log li { padding: 8px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 52px 1fr; gap: 2px 10px; }
+.pn-log time { color: var(--muted); font-family: 'Oswald', sans-serif; }
+.pn-log small { grid-column: 2; color: var(--muted); font-size: 12px; }
+/* admin tabs */
+.pn-tabs { position: sticky; top: 0; z-index: 30; display: flex; overflow-x: auto; scrollbar-width: none; gap: 0; background: #0B0B0B; border-bottom: 1px solid var(--line); margin: 0 -14px 14px; padding: 0 6px; }
+.pn-tabs::-webkit-scrollbar { display: none; }
+.pn-tabs button { flex: 0 0 auto; min-height: 52px; background: transparent; border: 0; border-bottom: 3px solid transparent; border-radius: 0; font-size: 13px; letter-spacing: 1.2px; color: var(--muted); padding: 0 12px; white-space: nowrap; }
+.pn-tabs button .pn-dot { display: inline-block; min-width: 18px; height: 18px; line-height: 18px; border-radius: 9px; background: var(--red); color: #fff; font: 500 11px 'Roboto', sans-serif; letter-spacing: 0; margin-left: 6px; padding: 0 5px; vertical-align: 1px; }
+.pn-tabs button.on { color: #fff; border-bottom-color: var(--blue2); }
+@media (min-width: 721px) { .pn-tabs { margin: 0 0 18px; display: flex; } .pn-tabs button { padding: 0 22px; font-size: 14px; } }
+.pn-totals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (min-width: 900px) { .pn-totals { grid-template-columns: repeat(4, 1fr); } }
+.pn-total { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.pn-total b { display: block; font: 700 30px/1.1 'Oswald', sans-serif; color: #fff; }
+.pn-total span { font: 400 11px 'Oswald', sans-serif; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+.pn-card--click { cursor: pointer; }
+.pn-card--click:hover { border-color: #333; }
+.pn-grand { border-top-color: var(--green); }
+.pn-grand .pn-table td { font-weight: 500; color: #fff; }
+.pn-settings { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .pn-settings { grid-template-columns: repeat(2, 1fr); } }
+.pn-inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pn-inline input { max-width: 110px; }
+
+/* v4: lunch, lift-down flags, sub-tabs, cameras, heatmap, accuracy, weather */
+.pn-lift--lunch { border-color: var(--yellow); background: repeating-linear-gradient(45deg, rgba(212,160,23,.55) 0 4px, transparent 4px 8px); opacity: 1; }
+.pn-lift--flag { border-color: var(--red); border-style: dashed; opacity: 1; animation: pnflag 1.6s ease-in-out infinite; }
+@keyframes pnflag { 50% { border-color: rgba(196,69,60,.35); } }
+.pn-mode--lunch { border-left-color: var(--yellow); }
+.pn-mode--flag { border-left-color: var(--red); }
+.pn-flag-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.pn-flag-btns button { min-height: 44px; flex: 1 1 140px; font-size: 13px; }
+.pn-lunch-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.pn-lunch-row:last-child { border-bottom: 0; }
+.pn-lunch-row b { font: 500 17px 'Oswald', sans-serif; letter-spacing: .5px; color: #fff; }
+.pn-lunch-row small { display: block; color: var(--muted); font-size: 13px; }
+.pn-lunch-row button { min-height: 44px; min-width: 132px; font-size: 13px; }
+.pn-subtabs { display: flex; gap: 8px; margin: 0 0 14px; overflow-x: auto; scrollbar-width: none; }
+.pn-subtabs button { flex: 0 0 auto; min-height: 40px; border-radius: 20px; padding: 0 14px; font-size: 12px; letter-spacing: 1px; }
+.pn-subtabs button.on { background: var(--blue); border-color: var(--blue2); color: #fff; }
+.pn-kv { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 10px 0 4px; }
+.pn-kv div { background: #101010; border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
+.pn-kv b { display: block; font: 500 18px 'Oswald', sans-serif; color: #fff; letter-spacing: .4px; }
+.pn-kv span { font: 400 10.5px 'Oswald', sans-serif; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); }
+.pn-bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 16px; margin-right: 6px; vertical-align: -2px; }
+.pn-bars i { width: 4px; background: #3a3a3a; border-radius: 1px; } .pn-bars i.on { background: var(--green); }
+.pn-alert { display: grid; grid-template-columns: 54px 1fr; gap: 4px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.pn-alert time { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pn-alert .pn-sms { display: inline-block; margin-top: 4px; font: 400 10.5px 'Oswald', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--yellow); border: 1px solid rgba(212,160,23,.5); border-radius: 3px; padding: 1px 6px; }
+.pn-heat { width: 100%; border-collapse: separate; border-spacing: 2px; font-size: 11px; }
+.pn-heat th { font: 400 10px 'Oswald', sans-serif; letter-spacing: 1px; color: var(--muted); font-weight: 400; padding: 2px; }
+.pn-heat td { height: 26px; border-radius: 3px; text-align: center; color: rgba(255,255,255,.85); font-variant-numeric: tabular-nums; min-width: 22px; }
+.pn-heat td.na { background: #141414; color: #444; }
+.pn-legend-heat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.pn-legend-heat i { width: 60px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #152a1c, #3D9A5F, #D4A017, #C4453C); display: inline-block; }
+.pn-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.pn-input-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.pn-input-row input { width: 110px; min-height: 46px; background: #0B0B0B; border: 1px solid var(--line); border-radius: 6px; color: #fff; font: 500 18px 'Oswald', sans-serif; padding: 0 12px; }
+.pn-input-row button { min-height: 46px; }
+.pn-err-pos { color: var(--yellow); } .pn-err-ok { color: var(--green); } .pn-err-bad { color: var(--red); }
+.pn-wx { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.pn-wx div { background: #101010; border: 1px solid var(--line); border-radius: 6px; padding: 8px 4px; text-align: center; }
+.pn-wx div.frost { border-color: rgba(61,87,224,.8); background: rgba(16,41,183,.18); }
+.pn-wx b { display: block; font: 500 12px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.pn-wx .ic { display: block; font-size: 20px; line-height: 28px; color: #fff; }
+.pn-wx .t { font: 500 15px 'Oswald', sans-serif; color: #fff; }
+.pn-wx small { display: block; font-size: 11px; color: var(--muted); }
+.pn-hint { border-left: 3px solid var(--blue2); background: rgba(16,41,183,.14); border-radius: 6px; padding: 12px 14px; color: #fff; margin: 0 0 14px; }
+.pn-hint small { display: block; color: var(--muted); margin-top: 4px; font-size: 13px; }
+.pn-sim { display: inline-block; font: 400 10px 'Oswald', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--yellow); border: 1px solid rgba(212,160,23,.5); border-radius: 3px; padding: 1px 6px; vertical-align: 2px; margin-left: 6px; }
+.pn-tabs button .pn-dot[hidden] { display: none; }
+.pn-wx small { line-height: 1.35; }
+.pn-lunch-row > span { flex: 1; min-width: 0; } .pn-lunch-row b { white-space: nowrap; }
+.pn-ghost.pn-ghost--on { border-color: var(--yellow); color: #fff; background: rgba(212,160,23,.12); }
+.pn-lunch-row .pn-ghost { width: auto; margin: 0; min-height: 44px; font-size: 13px; }
+</style>
 <style>@media (min-width: 721px) { #stage { padding: 48px 40px 80px !important; } }</style>
 </head>
 <body>
@@ -566,13 +707,22 @@ html { scroll-behavior: smooth; }
       <a class="link" href="#/etusivu"><span><b>Etusivu + jonowidget</b><small>Kopio etusivusta, widget heron alla</small></span><span class="chev">›</span></a>
       <a class="link" href="#/widget"><span><b>Widget yksinään</b><small>Kaikki asemat · napauta asemaa nähdäksesi tarkemmin</small></span><span class="chev">›</span></a>
       <a class="link" href="#/widget?site=olari"><span><b>Yhden aseman näkymä</b><small>Esim. Olari (4 nostinta)</small></span><span class="chev">›</span></a>
-      <a class="link" href="#/henkilosto"><span><b>Henkilöstön sivu</b><small>Nostimien käsin asetus · PIN <span class="pin">1234</span></small></span><span class="chev">›</span></a>
+      <a class="link" href="#/admin"><span><b>Ylläpito (omistaja)</b><small>Yleiskatsaus, asemat, kamerat ja hälytykset, tilastot, tarkkuus, sää, loki · demo-PIN <span class="pin">9999</span></small></span><span class="chev">›</span></a>
+    </div>
+    <h2>Henkilöstösivut asemittain</h2>
+    <p class="muted">Jokaisella asemalla on oma sivu ja oma PIN. PIN avaa vain oman aseman, joten muiden asemien nostimia ei voi muuttaa vahingossa. Alla olevat PIN-koodit ovat demo-PIN-koodeja.</p>
+    <div class="links">
+      <a class="link" href="#/staff/olari"><span><b>Olari</b><small>4 nostinta · demo-PIN <span class="pin">1111</span></small></span><span class="chev">›</span></a>
+      <a class="link" href="#/staff/puotila"><span><b>Puotila</b><small>2 nostinta · demo-PIN <span class="pin">2222</span></small></span><span class="chev">›</span></a>
+      <a class="link" href="#/staff/kannelmaki"><span><b>Kannelmäki</b><small>2 nostinta · demo-PIN <span class="pin">3333</span></small></span><span class="chev">›</span></a>
+      <a class="link" href="#/staff/ala-tikkurila"><span><b>Ala-Tikkurila</b><small>2 nostinta · demo-PIN <span class="pin">4444</span></small></span><span class="chev">›</span></a>
+      <a class="link" href="#/staff/jarvenpaa"><span><b>Järvenpää</b><small>2 nostinta · demo-PIN <span class="pin">5555</span></small></span><span class="chev">›</span></a>
     </div>
 
     <h2>Demon ohjaus</h2>
     <p class="muted">Simulaation nopeus (koskee kaikkia, jotka katsovat demoa):</p>
     <div class="seg" id="speed"><button data-s="1">1× tosiaika</button><button data-s="5">5×</button><button data-s="20">20×</button></div>
-    <p class="muted" style="margin-top:14px">Kamerakatko: piilottaa aseman arvion kuten oikeassa järjestelmässä.</p>
+    <p class="muted" style="margin-top:14px">Kameroiden tila simulaattorissa. Kameran voi merkitä pois käytöstä tai palauttaa vain ylläpito (Ylläpito → Kamerat), joten täällä ei ole kamerapainikkeita.</p>
     <div class="sites" id="sites"></div>
     <p style="margin-top:12px"><button id="outages">Satunnaiset katkot</button> <span class="muted" id="outtxt"></span></p>
     <p class="muted" style="margin-top:14px">Aukioloajat: demossa asemat ovat oletuksena aina auki, jotta näet liikettä myös iltaisin. Valitse "Oikeat aukioloajat" nähdäksesi suljettu-tilan (ma–pe 9–18, la 10–16, su suljettu).</p>
@@ -585,10 +735,15 @@ html { scroll-behavior: smooth; }
     <ul class="how muted">
       <li>Odotus = autoja jonossa ÷ nostimia käytössä × aseman liukuva keskimääräinen vaihtoaika (20 viimeisintä vaihtoa). Näytetään haarukkana 5 min tarkkuudella.</li>
       <li>Auto lasketaan jonoon vasta, kun se on ollut rengaskaistalla 45 s – ohi ajavat tankkaajat suodatetaan pois.</li>
-      <li>Nostin lasketaan suljetuksi, jos se on ollut tyhjänä 10 min samalla kun autoja odottaa (demon arvo). Se palaa käyttöön heti, kun sille ajaa auto.</li>
-      <li>Henkilöstön käsin asetus voittaa automaattisen luvun vuorokauden loppuun asti tai kunnes se palautetaan.</li>
+      <li>Opetteluikkuna: aseman auettua kamera seuraa 30 min (ylläpidon asetus), mille nostimille autoja tulee. Sillä välin sivusto käyttää aseman oletusta (Olari 4, muut 2). Sitten kamera lukitsee päivän nostinmäärän ("Kamera päätti: 2 nostinta klo 09.30"). Demo alkaa kuin asemat olisivat juuri auenneet – nopeuta 20×, niin näet ikkunan päättyvän noin 1,5 minuutissa.</li>
+      <li>Sen jälkeen luku muuttuu vain selvästä muutoksesta: nostin suljetuksi, jos se on tyhjänä 10 min autojen odottaessa, ja takaisin käyttöön, kun siinä on ollut auto 5 min.</li>
+      <li>Henkilöstö (oma asema) ja ylläpito (kaikki asemat) voivat asettaa luvun käsin milloin tahansa, myös opettelun aikana. Käsin asetus voittaa aseman sulkemiseen asti.</li>
+      <li>Tavallinen vaihto kestää 6–8 min (aloitusarvo 7 min). Jos auto on nostimella yli 15 min (ylläpidon asetus 15–20), nostin merkitään hitaaksi: sitä ei lasketa keskiarvoon, ja odotusarvio pitää nostimen poissa käytöstä, kunnes se vapautuu. Simulaattorissa noin 5 % autoista jumittuu 15–30 min.</li>
       <li>Widget kysyy kerran luvan sijaintiin ja näyttää ensin lähimmän aseman; muut asemat listataan etäisyyden mukaan. Kieli vaihtuu FI/EN-painikkeesta. "Aja tähän" avaa iPhonessa Apple Mapsin, muualla Google Mapsin.</li>
-      <li>Jos kamera ei ole lähettänyt tietoja 3 minuuttiin, arvio piilotetaan. Vihreä ≤ 15 min, keltainen ≤ 30 min, punainen yli 30 min.</li>
+      <li>Jos kamera ei ole lähettänyt tietoja 3 minuuttiin, sen linssi on peittynyt (esim. lunta) tai ylläpito on merkinnyt sen pois, widget näyttää "Arvio ei saatavilla". Odottamattomasta 3 min katkosta lähtee ylläpidolle tekstiviesti (demossa simuloitu). Vihreä ≤ 15 min, keltainen ≤ 30 min, punainen yli 30 min.</li>
+      <li>Widgetissä: pieni käyrä näyttää jonon viimeisen tunnin ajalta, "Yleensä hiljaisinta klo 10–11" lasketaan aseman omista aiemmista päivistä (demossa 21 simuloitua päivää), ja "Ilmoita kun jono alle 15 min" ilmoittaa selaimessa, kun raja alittuu. Viimeisen puolen tunnin aikana ennen sulkemista näkyy "Ehdit vielä tänään" – jonossa sulkemishetkellä olevat palvellaan aina.</li>
+      <li>Lounastauko: henkilöstö tai ylläpito voi laittaa nostimen 30 min tauolle; se lasketaan pois arviosta ja palaa itsestään. Jos laskettu nostin on tyhjänä 30 min (ylläpidon asetus) jonon aikana, ylläpito saa vahvistettavan "Nostin ehkä rikki" -merkinnän – tauolla olevaa nostinta ei merkitä.</li>
+      <li>Tarkkuus: ylläpito syöttää päivän kuittimäärän, ja kameran laskentaa verrataan siihen. Suhteesta lasketaan asemakohtainen korjauskerroin seuraavalle päivälle. Sää tulee Ilmatieteen laitoksen avoimesta datasta (ilmainen, ei avainta).</li>
     </ul>
   </div>
   
@@ -601,7 +756,6 @@ html { scroll-behavior: smooth; }
     <ul class="site-nav">
       <li><a href="#missa">Missä?</a></li>
       <li><a href="#milloin">Milloin?</a></li>
-      <li><a href="#hinta">Paljonko maksaa?</a></li>
       <li><a href="#miten">Miten se toimii?</a></li>
       <li><a href="#toimipisteet">Toimipisteet</a></li>
       <li><a href="#toihin">Meille töihin</a></li>
@@ -660,28 +814,65 @@ html { scroll-behavior: smooth; }
   
 </div>
 <div class="view" id="v-widget" hidden><div class="stage" id="stage" style="max-width:960px;margin:0 auto;padding:16px 12px 64px;min-height:calc(100vh - 40px)"><div id="w"></div></div><div class="demo-bar"><a href="#/">‹ Demo</a><span>Widget yksinään · esimerkkidata</span></div></div>
-<div class="view" id="v-henkilosto" hidden>
-  <div class="wrap">
-    <p class="kicker">Henkilöstö</p>
-    <h1>Nostimet käytössä tänään</h1>
-    <p class="lead">Kamera laskee käytössä olevat nostimet automaattisesti. Jos luku on väärin, aseta oikea luku tästä – se on voimassa päivän loppuun.</p>
-    <div id="login" class="card pin">
-      <label for="pin" class="sub" style="display:block;margin-bottom:8px">Syötä PIN-koodi</label>
-      <input id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" type="password" aria-label="PIN-koodi">
-      <div class="keys" id="keys"></div>
-      <button class="primary" id="go" type="button">Kirjaudu</button>
-      <p class="err" id="err"></p>
-    </div>
-    <div id="app" hidden>
-      <div id="ssites"></div>
-      <button class="logout" id="logout" type="button">Kirjaudu ulos</button>
+<div class="view" id="v-staff" hidden>
+  <div class="pn-page" id="st-page">
+    <div class="pn-wrap">
+      <div class="pn-top">
+        <div><p class="pn-kicker" id="st-kicker">Henkilöstö · nostimet</p><h1 class="pn-station" id="st-name">–</h1></div>
+        <button type="button" class="pn-lang" id="st-lang">EN</button>
+      </div>
+      <p class="pn-lead" id="st-lead"></p>
+      <div id="st-login" class="pn-card pn-pin">
+        <label for="st-pin" class="pn-small" id="st-pinlabel" style="display:block;margin-bottom:8px"></label>
+        <input id="st-pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" type="password">
+        <div class="pn-keys" id="st-keys"></div>
+        <button class="pn-primary" id="st-go" type="button"></button>
+        <p class="pn-err" id="st-err"></p>
+      </div>
+      <div id="st-app" hidden>
+        <div id="st-site"></div>
+        <button class="pn-logout" id="st-logout" type="button"></button>
+      </div>
     </div>
   </div>
-  <div class="toast" id="toast"></div>
+  <div class="demo-bar"><a href="#/">‹ Demo</a><span id="st-demobar">Henkilöstösivu · demo</span></div>
   
-  <div class="demo-bar"><a href="#/">‹ Demo</a><span>Henkilöstösivu · demo-PIN 1234</span></div>
 </div>
-<script>(()=>{var W=Object.defineProperty;var j=(i,e,t)=>e in i?W(i,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):i[e]=t;var m=(i,e,t)=>j(i,typeof e!="symbol"?e+"":e,t);var _=[{id:"olari",lat:60.1703016,lng:24.7470786,name:"Olari",city:"Espoo",address:"Uuskartanontie 2, 02200 Espoo",maxLifts:4,simServiceMeanMin:14,simArrivalBasePerHour:17,simPhase:0},{id:"puotila",lat:60.2077104,lng:25.1054855,name:"Puotila",city:"Helsinki",address:"Meripellontie 11C, 00910 Helsinki",maxLifts:2,simServiceMeanMin:15,simArrivalBasePerHour:9,simPhase:1.3},{id:"kannelmaki",lat:60.2378889,lng:24.8891307,name:"Kannelm\xE4ki",city:"Helsinki",address:"Laulukuja 2, 00420 Helsinki",maxLifts:2,simServiceMeanMin:13,simArrivalBasePerHour:8.5,simPhase:2.6},{id:"ala-tikkurila",lat:60.2834908,lng:25.0305763,name:"Ala-Tikkurila",city:"Helsinki",address:"H\xE4rk\xE4valjakontie 30, 00750 Helsinki",maxLifts:2,simServiceMeanMin:16,simArrivalBasePerHour:9.5,simPhase:3.9},{id:"jarvenpaa",lat:60.4982728,lng:25.0899454,name:"J\xE4rvenp\xE4\xE4",city:"J\xE4rvenp\xE4\xE4",address:"Yritt\xE4j\xE4nkatu 1, 04400 J\xE4rvenp\xE4\xE4",maxLifts:2,simServiceMeanMin:14,simArrivalBasePerHour:8,simPhase:5.1}],M={0:null,1:[540,1080],2:[540,1080],3:[540,1080],4:[540,1080],5:[540,1080],6:[600,960]};var p=6e4,B=10*p,U=14,$=9e4,P=3*p;function y(i){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Helsinki",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(i))}function q(i){let e=y(i),t=i,r=i+1560*p;for(;r-t>1e3;){let n=Math.floor((t+r)/2);y(n)===e?t=n:r=n}return r}function C(i,e){return{cfg:i,queue:new Map,lifts:Array.from({length:i.maxLifts},()=>({car:null,since:e,idleWhileWaiting:0,autoActive:!0})),samples:[],ewma:null,servedToday:0,abandonedToday:0,filteredToday:0,lastHeartbeat:e,lastEvent:e,override:null,lastTick:e,dayKey:y(e)}}function R(i,e){switch(i.lastHeartbeat=Math.max(i.lastHeartbeat,e.at),e.type!=="heartbeat"&&(i.lastEvent=e.at),e.type){case"lane_entered":i.queue.set(e.car,e.at);break;case"left_without_service":i.queue.delete(e.car)&&i.abandonedToday++;break;case"drive_through_filtered":i.filteredToday++;break;case"resync":{i.queue=new Map(e.queue.map(t=>[t.car,t.at])),e.lifts.forEach((t,r)=>{let n=i.lifts[r];t?(n.car=t.car,n.since=t.since,n.idleWhileWaiting=0,n.autoActive=!0):n.car&&(n.car=null,n.since=e.at)});break}case"lift_occupied":{i.queue.delete(e.car);let t=i.lifts[e.lift];t.car=e.car,t.since=e.at,t.idleWhileWaiting=0,t.autoActive=!0;break}case"lift_vacated":{let t=i.lifts[e.lift];if(t.car){let r=(e.at-t.since)/p;r>=5&&r<=40&&(i.samples.push(r),i.samples.length>20&&i.samples.shift(),i.ewma=i.ewma==null?r:.2*r+.8*i.ewma),i.servedToday++}t.car=null,t.since=e.at,t.idleWhileWaiting=0;break}}}function x(i,e){let t=Math.max(0,e-i.lastTick);i.lastTick=e;let r=y(e);if(r!==i.dayKey&&(i.dayKey=r,i.servedToday=0,i.abandonedToday=0,i.filteredToday=0,i.override=null),i.override&&e>=i.override.until&&(i.override=null),e-i.lastHeartbeat<P)for(let a of i.lifts)a.car||(i.queue.size>0&&(a.idleWhileWaiting+=t),a.idleWhileWaiting>=B&&(a.autoActive=!1))}var F={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};function G(i){let e=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Helsinki",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(i)),t=r=>e.find(n=>n.type===r).value;return{dow:F[t("weekday")],min:Number(t("hour"))*60+Number(t("minute"))}}function K(i){let{dow:e,min:t}=G(i),r=M[e];if(r&&t>=r[0]&&t<r[1])return{open:!0,opens_in_days:0,opens_time:null,opens_dow:e};for(let n=0;n<8;n++){let a=M[(e+n)%7];if(!a||n===0&&t>=a[0])continue;let o=String(Math.floor(a[0]/60)).padStart(2,"0"),l=String(a[0]%60).padStart(2,"0");return{open:!1,opens_in_days:n,opens_time:`${o}.${l}`,opens_dow:(e+n)%7}}return{open:!1,opens_in_days:0,opens_time:null,opens_dow:e}}function J(i){let e=[...i].sort((r,n)=>r-n),t=e.length>>1;return e.length%2?e[t]:(e[t-1]+e[t])/2}var L=i=>Math.max(5,Math.round(i/5)*5);function E(i,e,t=!1){var A,O;let r=t?K(e):{open:!0,opens_in_days:0,opens_time:null,opens_dow:0},n=e-i.lastHeartbeat,a=n<$?"fresh":n<P?"ageing":"hidden",o=i.lifts.filter(v=>v.autoActive).length,l=o===0,f=i.override?i.override.lifts:Math.max(1,o),b=i.samples.length>=3?J(i.samples):U,s=i.queue.size,u=i.lifts.filter(v=>v.car).length,d=null,g=null,S="",H="off";if(a!=="hidden"&&r.open){let v=Math.max(0,f-u);if(s===0&&v>0)d=0,g=0,S="Ei jonoa";else if(s===0)d=0,g=10,S="alle 10 min";else{let D=s/f*b;d=Math.min(90,L(.7*D)),g=Math.min(90,Math.max(d+5,L(1.4*D))),S=g>=90&&d>=90?"yli 90 min":`${d}\u2013${g} min`}H=g<=15?"green":g<=30?"yellow":"red"}return{id:i.cfg.id,name:i.cfg.name,city:i.cfg.city,address:i.cfg.address,lat:i.cfg.lat,lng:i.cfg.lng,open:r.open,opens_in_days:r.opens_in_days,opens_time:r.opens_time,opens_dow:r.opens_dow,max_lifts:i.cfg.maxLifts,queue_length:a==="hidden"?null:s,in_service:a==="hidden"?null:u,served_today:i.servedToday,active_lifts:a==="hidden"?null:f,auto_lifts:o,auto_fallback:l,lifts_source:i.override?"override":"auto",override_until:(O=(A=i.override)==null?void 0:A.until)!=null?O:null,lift_states:i.lifts.map(v=>v.car?"busy":v.autoActive?"free":"closed"),service_min:Math.round(b*10)/10,service_samples:i.samples.length,wait_low_min:d,wait_high_min:g,wait_text:S,status:H,quality:a,last_heartbeat_at:i.lastHeartbeat,last_event_at:i.lastEvent,age_sec:Math.round(n/1e3)}}var I=45e3;function N(i,e){return i+Math.random()*(e-i)}function z(){let i=0,e=0;for(;!i;)i=Math.random();for(;!e;)e=Math.random();return Math.sqrt(-2*Math.log(i))*Math.cos(2*Math.PI*e)}var w=class{constructor(e,t){m(this,"sites");m(this,"emit");this.emit=e,this.sites=_.map(r=>({cfg:r,lane:[],offline:!1,offlineManual:!1,offlineUntilReal:null,nextHeartbeat:t,seq:0,lifts:Array.from({length:r.maxLifts},(n,a)=>({working:r.maxLifts===4?a<3:!0,pendingDown:!1,car:null,serviceEnd:0,serviceStart:0,freeSince:t,pickupAt:null}))}))}send(e,t){e.offline||this.emit(t)}setOffline(e,t,r,n,a){let o=this.sites.find(f=>f.cfg.id===e);if(!o)return!1;let l=o.offline;return o.offline=t,o.offlineManual=t&&r,o.offlineUntilReal=t?n:null,l&&!t&&this.resync(o,a),!0}resync(e,t){this.emit({type:"resync",site:e.cfg.id,at:t,queue:e.lane.filter(r=>r.joined).map(r=>({car:r.id,at:r.arrivedAt+I})),lifts:e.lifts.map(r=>r.car?{car:r.car.id,since:r.serviceStart}:null)}),this.emit({type:"heartbeat",site:e.cfg.id,at:t})}step(e,t){let r=e/36e5;for(let n of this.sites){let a=n.cfg.id,o=.5+.65*(1+Math.sin(2*Math.PI*r/2.5+n.cfg.simPhase))/2,f=n.cfg.simArrivalBasePerHour*o*t/36e5;for(;f>0;)Math.random()<Math.min(f,1)&&this.arrive(n,e),f-=1;Math.random()<20*t/36e5&&this.send(n,{type:"drive_through_filtered",site:a,at:e});for(let s of n.lane)!s.joined&&e-s.arrivedAt>=I&&(s.joined=!0,this.send(n,{type:"lane_entered",site:a,at:e,car:s.id}));for(let s of[...n.lane])s.joined&&e-s.arrivedAt>s.patience&&(n.lane.splice(n.lane.indexOf(s),1),this.send(n,{type:"left_without_service",site:a,at:e,car:s.id}));let b=()=>n.lifts.filter(s=>s.working&&!s.pendingDown).length;n.lifts.forEach((s,u)=>{if(s.car&&e>=s.serviceEnd&&(this.send(n,{type:"lift_vacated",site:a,at:e,lift:u,car:s.car.id}),s.car=null,s.freeSince=e,s.pickupAt=null,s.pendingDown&&(s.working=!1,s.pendingDown=!1)),s.working&&!s.pendingDown){let d=n.cfg.maxLifts===4?.014285714285714285:.006666666666666667;b()>1&&Math.random()<d*t/p&&(s.car?s.pendingDown=!0:s.working=!1)}else s.working||Math.random()<1/35*t/p&&(s.working=!0,s.freeSince=e);if(s.working&&!s.pendingDown&&!s.car){let d=n.lane.find(g=>g.joined);if(d){if(s.pickupAt==null&&(s.pickupAt=e+N(.7,2)*p),e>=s.pickupAt){n.lane.splice(n.lane.indexOf(d),1),s.car=d,s.pickupAt=null;let g=Math.min(32,Math.max(7,n.cfg.simServiceMeanMin+z()*3));s.serviceEnd=e+g*p,s.serviceStart=e,this.send(n,{type:"lift_occupied",site:a,at:e,lift:u,car:d.id})}}else s.pickupAt=null}}),e>=n.nextHeartbeat&&(this.send(n,{type:"heartbeat",site:a,at:e}),n.nextHeartbeat=e+3e4)}}arrive(e,t){e.seq++,e.lane.push({id:`${e.cfg.id}-${e.seq}`,arrivedAt:t,joined:!1,patience:N(25,60)*p})}truth(e){let t=this.sites.find(r=>r.cfg.id===e);return{offline:t.offline,offline_manual:t.offlineManual,lane:t.lane.filter(r=>r.joined).length,working_lifts:t.lifts.filter(r=>r.working&&!r.pendingDown).length}}};var T=1e3,k=class{constructor(e={}){m(this,"speed");m(this,"realBase",Date.now());m(this,"simBase",Date.now());m(this,"state",new Map);m(this,"recent",[]);m(this,"sim");m(this,"lastStep");m(this,"realHours",!1);m(this,"randomOutages");m(this,"pin");m(this,"tokens",new Map);m(this,"warming",!0);var n,a,o;this.speed=(n=e.speed)!=null?n:1,this.randomOutages=(a=e.randomOutages)!=null?a:!0,this.pin=(o=e.pin)!=null?o:"1234";let t=this.simNow(),r=t-180*p;for(let l of _)this.state.set(l.id,C(l,r));this.sim=new w(l=>this.ingest(l),r);for(let l=r;l<t;l+=1e4){this.sim.step(l,1e4);for(let f of this.state.values())x(f,l)}this.warming=!1,this.lastStep=t}simNow(){return this.simBase+(Date.now()-this.realBase)*this.speed}setSpeed(e){this.simBase=this.simNow(),this.realBase=Date.now(),this.speed=e}ingest(e){let t=this.state.get(e.site);t&&(R(t,e),!this.warming&&e.type!=="heartbeat"&&(this.recent.push({...e,realAt:Date.now()}),this.recent.length>60&&this.recent.shift()))}step(){let e=this.simNow(),t=e-this.lastStep,r=Math.max(1,Math.ceil(t/1e4));for(let a=1;a<=r;a++){let o=this.lastStep+t*a/r;this.sim.step(o,t/r);for(let l of this.state.values())x(l,o)}this.lastStep=e;let n=Date.now();for(let a of this.sim.sites)a.offline&&!a.offlineManual&&a.offlineUntilReal&&n>=a.offlineUntilReal&&this.sim.setOffline(a.cfg.id,!1,!1,null,e);if(this.randomOutages&&!this.sim.sites.some(a=>a.offline)&&Math.random()<T/(15*6e4)){let a=this.sim.sites[Math.floor(Math.random()*this.sim.sites.length)];this.sim.setOffline(a.cfg.id,!0,!1,n+(3+Math.random()*3)*6e4,e)}}allSnapshots(){var n,a;let e=this.simNow(),t=_.map(o=>E(this.state.get(o.id),e,this.realHours)),r=t.filter(o=>o.quality!=="hidden"&&o.open);return r.sort((o,l)=>o.wait_high_min-l.wait_high_min||o.queue_length-l.queue_length||l.active_lifts-l.in_service-(o.active_lifts-o.in_service)),{generated_at:e,simulated:!0,sim:{speed:this.speed},quietest:(a=(n=r[0])==null?void 0:n.id)!=null?a:null,sites:t}}siteStatus(e){let t=this.allSnapshots(),r=t.sites.find(n=>n.id===e);return r?{generated_at:t.generated_at,simulated:!0,sim:t.sim,quietest:t.quietest,site:r}:null}login(e,t){return e!==this.pin?null:(this.tokens.set(t,Date.now()+12*36e5),t)}authed(e){var r;let t=e==null?void 0:e.replace(/^Bearer /,"");return!!t&&((r=this.tokens.get(t))!=null?r:0)>Date.now()}setOverride(e,t){let r=this.state.get(e);if(!r)return{ok:!1,code:404,error:"unknown site"};let n=this.simNow();if(t==null)r.override=null;else{let a=Math.round(Number(t));if(!(a>=1&&a<=r.cfg.maxLifts))return{ok:!1,code:400,error:`1\u2013${r.cfg.maxLifts}`};r.override={lifts:a,setAt:n,until:q(n)}}return{ok:!0,snap:E(r,n,this.realHours)}}demoState(){return{speed:this.speed,sim_now:this.simNow(),random_outages:this.randomOutages,real_hours:this.realHours,pin_hint:this.pin,sites:_.map(e=>({id:e.id,name:e.name,...this.sim.truth(e.id)})),recent_events:this.recent.slice(-25).reverse()}}setOffline(e,t){let r=this.simNow();if(!this.sim.setOffline(e,t,!0,null,r))return!1;if(t){let n=this.state.get(e);n.lastHeartbeat=Math.min(n.lastHeartbeat,r-4*p)}return!0}};var h=new k({speed:1,randomOutages:!0,pin:"1234"});setInterval(()=>h.step(),T);var c=(i,e=200)=>new Response(JSON.stringify(i),{status:e,headers:{"Content-Type":"application/json"}}),V=window.fetch.bind(window);window.fetch=async(i,e)=>{var b,s;let t=typeof i=="string"?i:i instanceof URL?i.href:i.url,r=t.indexOf("/v1/");if(r<0)return V(i,e);let n=t.slice(r).split("?")[0],a=((b=e==null?void 0:e.method)!=null?b:"GET").toUpperCase(),o=e!=null&&e.body?JSON.parse(String(e.body)):{},l=new Headers(e==null?void 0:e.headers).get("Authorization"),f;if(a==="GET"&&n==="/v1/sites")return c(h.allSnapshots());if(a==="GET"&&(f=n.match(/^\/v1\/sites\/([^/]+)\/status$/))){let u=h.siteStatus(f[1]);return u?c(u):c({error:"unknown site"},404)}if(a==="POST"&&n==="/v1/admin/login"){let u=h.login(String((s=o.pin)!=null?s:""),Math.random().toString(36).slice(2)+Date.now().toString(36));return u?c({token:u}):c({error:"V\xE4\xE4r\xE4 PIN"},401)}if(n.startsWith("/v1/admin/")&&!h.authed(l))return c({error:"auth"},401);if(a==="GET"&&n==="/v1/admin/sites")return c(h.allSnapshots());if(a==="POST"&&(f=n.match(/^\/v1\/admin\/sites\/([^/]+)\/override$/))){let u=h.setOverride(f[1],o.lifts);return u.ok?c(u.snap):c({error:u.error},u.code)}if(a==="GET"&&n==="/v1/demo/state")return c(h.demoState());if(a==="POST"&&n==="/v1/demo/speed"){let u=Number(o.speed);return[1,5,20].includes(u)?(h.setSpeed(u),c({speed:u})):c({error:"1|5|20"},400)}return a==="POST"&&n==="/v1/demo/outages"?(h.randomOutages=!!o.enabled,c({random_outages:h.randomOutages})):a==="POST"&&(f=n.match(/^\/v1\/demo\/sites\/([^/]+)\/offline$/))?h.setOffline(f[1],!!o.offline)?c({ok:!0}):c({error:"unknown site"},404):a==="POST"&&n==="/v1/demo/hours"?(h.realHours=!!o.real,c({real_hours:h.realHours})):c({error:"not found"},404)};})();
+<div class="view" id="v-admin" hidden>
+  <div class="pn-page" id="ad-page">
+    <div class="pn-wrap pn-wrap--wide">
+      <div class="pn-top">
+        <div><p class="pn-kicker" id="ad-kicker"></p><h1 class="pn-h1" id="ad-h1"></h1></div>
+        <button type="button" class="pn-lang" id="ad-lang">EN</button>
+      </div>
+      <div id="ad-login" class="pn-card pn-pin" style="max-width:480px">
+        <label for="ad-pin" class="pn-small" id="ad-pinlabel" style="display:block;margin-bottom:8px"></label>
+        <input id="ad-pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" type="password">
+        <div class="pn-keys" id="ad-keys"></div>
+        <button class="pn-primary" id="ad-go" type="button"></button>
+        <p class="pn-err" id="ad-err"></p>
+      </div>
+      <div id="ad-app" hidden>
+        <nav class="pn-tabs" id="ad-tabs" role="tablist"></nav>
+        <section id="ad-tab-overview"><div id="ad-flags"></div><div id="ad-totals" class="pn-totals"></div><div id="ad-overview" class="pn-grid"></div></section>
+        <section id="ad-tab-stations" hidden>
+          <div class="pn-settings" id="ad-settings"></div>
+          <h2 class="pn-h2" id="ad-st-h2"></h2>
+          <div id="ad-stations" class="pn-grid"></div>
+        </section>
+        <section id="ad-tab-cameras" hidden><div id="ad-cams" class="pn-grid"></div><div class="pn-card" style="margin-top:14px"><p class="pn-label" style="margin-top:0!important" id="ad-alerts-h"></p><div id="ad-alerts"></div></div></section>
+        <section id="ad-tab-stats" hidden><div class="pn-subtabs" id="ad-subtabs"></div><div id="ad-stats"></div></section>
+        <section id="ad-tab-accuracy" hidden><div id="ad-acc"></div></section>
+        <section id="ad-tab-weather" hidden><div id="ad-wx"></div></section>
+        <section id="ad-tab-log" hidden><div class="pn-card"><p class="pn-label" style="margin-top:0!important" id="ad-log-h"></p><ul class="pn-log" id="ad-log"></ul></div></section>
+        <button class="pn-logout" id="ad-logout" type="button"></button>
+      </div>
+    </div>
+  </div>
+  <div class="demo-bar"><a href="#/">‹ Demo</a><span id="ad-demobar"></span></div>
+  
+</div>
+<script>(()=>{var be=Object.defineProperty;var ve=(t,e,n)=>e in t?be(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var b=(t,e,n)=>ve(t,typeof e!="symbol"?e+"":e,n);var y=[{id:"olari",area:"Espoo",fmiPlace:"espoo",simQuietHour:10,simReceiptBias:.04,inFi:"Olariin",ofFi:"Olarin",lat:60.1703016,lng:24.7470786,name:"Olari",city:"Espoo",address:"Uuskartanontie 2, 02200 Espoo",maxLifts:4,simServiceMeanMin:7,simArrivalBasePerHour:16.5,simPhase:0},{id:"puotila",area:"Helsinki",fmiPlace:"helsinki",simQuietHour:13,simReceiptBias:-.02,inFi:"Puotilaan",ofFi:"Puotilan",lat:60.2077104,lng:25.1054855,name:"Puotila",city:"Helsinki",address:"Meripellontie 11C, 00910 Helsinki",maxLifts:2,simServiceMeanMin:7,simArrivalBasePerHour:8.3,simPhase:1.3},{id:"kannelmaki",area:"Helsinki",fmiPlace:"helsinki",simQuietHour:11,simReceiptBias:.06,inFi:"Kannelm\xE4keen",ofFi:"Kannelm\xE4en",lat:60.2378889,lng:24.8891307,name:"Kannelm\xE4ki",city:"Helsinki",address:"Laulukuja 2, 00420 Helsinki",maxLifts:2,simServiceMeanMin:7,simArrivalBasePerHour:7.9,simPhase:2.6},{id:"ala-tikkurila",area:"Helsinki",fmiPlace:"helsinki",simQuietHour:14,simReceiptBias:.01,inFi:"Ala-Tikkurilaan",ofFi:"Ala-Tikkurilan",lat:60.2834908,lng:25.0305763,name:"Ala-Tikkurila",city:"Helsinki",address:"H\xE4rk\xE4valjakontie 30, 00750 Helsinki",maxLifts:2,simServiceMeanMin:7,simArrivalBasePerHour:8.6,simPhase:3.9},{id:"jarvenpaa",area:"J\xE4rvenp\xE4\xE4",fmiPlace:"j\xE4rvenp\xE4\xE4",simQuietHour:12,simReceiptBias:.03,inFi:"J\xE4rvenp\xE4\xE4h\xE4n",ofFi:"J\xE4rvenp\xE4\xE4n",lat:60.4982728,lng:25.0899454,name:"J\xE4rvenp\xE4\xE4",city:"J\xE4rvenp\xE4\xE4",address:"Yritt\xE4j\xE4nkatu 1, 04400 J\xE4rvenp\xE4\xE4",maxLifts:2,simServiceMeanMin:7,simArrivalBasePerHour:7.4,simPhase:5.1}],H={0:null,1:[540,1080],2:[540,1080],3:[540,1080],4:[540,1080],5:[540,1080],6:[600,960]};var p=6e4,_e=10*p,ye=7,we=15,Se=9e4,R=3*p,Me=5*p;function k(t){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Helsinki",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(t))}function D(t){let e=k(t),n=t,i=t+1560*p;for(;i-n>1e3;){let a=Math.floor((n+i)/2);k(a)===e?n=a:i=a}return i}function j(t,e){return{cfg:t,queue:new Map,lifts:Array.from({length:t.maxLifts},()=>({car:null,since:e,idleWhileWaiting:0,autoActive:!0,served:0,minutes:0,servedY:0,minutesY:0,lunchUntil:0,lunchBy:null,idleQueueMs:0,downFlagAt:null,confirmedDown:!1})),samples:[],ewma:null,servedToday:0,abandonedToday:0,filteredToday:0,lastHeartbeat:e,lastEvent:e,override:null,lastTick:e,dayKey:k(e),hours:JSON.parse(JSON.stringify(H)),station:null,servedYesterday:0,learn:null,cameraDecision:null,slowMin:we,downMin:30,trend:[],trendAt:e,abandonedYesterday:0,correction:1,correctionNext:null,tamper:null}}function B(t,e){switch(t.lastHeartbeat=Math.max(t.lastHeartbeat,e.at),e.type!=="heartbeat"&&(t.lastEvent=e.at),e.type){case"lane_entered":t.queue.set(e.car,e.at),t.learn&&!t.learn.done&&t.learn.carsSeen++;break;case"left_without_service":t.queue.delete(e.car)&&t.abandonedToday++;break;case"drive_through_filtered":t.filteredToday++;break;case"resync":{t.queue=new Map(e.queue.map(n=>[n.car,n.at])),e.lifts.forEach((n,i)=>{let a=t.lifts[i];n?(a.car=n.car,a.since=n.since,a.idleWhileWaiting=0,a.autoActive=!0):a.car&&(a.car=null,a.since=e.at)});break}case"lift_occupied":{t.queue.delete(e.car);let n=t.lifts[e.lift];n.car=e.car,n.since=e.at,n.idleWhileWaiting=0,n.idleQueueMs=0,n.downFlagAt=null,t.learn&&!t.learn.done&&e.at>=t.learn.start&&!t.learn.seen.includes(e.lift)&&t.learn.seen.push(e.lift);break}case"lift_vacated":{let n=t.lifts[e.lift];if(n.car){let i=(e.at-n.since)/p;i>=3&&i<=t.slowMin&&(t.samples.push(i),t.samples.length>20&&t.samples.shift(),t.ewma=t.ewma==null?i:.2*i+.8*t.ewma),t.servedToday++,n.served++,n.minutes+=i}n.car=null,n.since=e.at,n.idleWhileWaiting=0;break}}}function $(t,e,n){t.learn={start:e,end:e+n*p,done:!1,seen:t.lifts.map((i,a)=>i.car?a:-1).filter(i=>i>=0),carsSeen:0},t.cameraDecision=null;for(let i of t.lifts)i.autoActive=!0,i.idleWhileWaiting=0}function ke(t,e){let n=t.learn;if(n.done=!0,n.carsSeen===0&&n.seen.length===0){for(let i of t.lifts)i.autoActive=!0;t.cameraDecision={lifts:t.cfg.maxLifts,at:e,kind:"no_cars"};return}t.lifts.forEach((i,a)=>{i.autoActive=n.seen.includes(a)||!!i.car,i.idleWhileWaiting=0}),t.lifts.some(i=>i.autoActive)||(t.lifts[0].autoActive=!0),t.cameraDecision={lifts:t.lifts.filter(i=>i.autoActive).length,at:e,kind:"decided"}}function Y(t,e){var o;let n=Math.max(0,e-t.lastTick);t.lastTick=e;let i=k(e);if(i!==t.dayKey){for(let s of t.lifts)s.servedY=s.served,s.minutesY=s.minutes,s.served=0,s.minutes=0;t.learn=null,t.cameraDecision=null,t.dayKey=i,t.servedYesterday=t.servedToday,t.servedToday=0,((o=t.station)==null?void 0:o.mode)==="closed_day"&&(t.station=null),t.abandonedYesterday=t.abandonedToday,t.abandonedToday=0,t.filteredToday=0,t.override=null,t.correctionNext!=null&&(t.correction=t.correctionNext,t.correctionNext=null);for(let s of t.lifts)s.lunchUntil=0,s.lunchBy=null,s.idleQueueMs=0,s.downFlagAt=null,s.confirmedDown=!1}t.override&&e>=t.override.until&&(t.override=null),t.station&&e>=t.station.until&&(t.station=null);let a=e-t.lastHeartbeat<R&&!t.tamper;for(let s of t.lifts)s.lunchUntil&&e>=s.lunchUntil&&(s.lunchUntil=0,s.lunchBy=null,s.idleWhileWaiting=0,s.idleQueueMs=0);for(;e-t.trendAt>=p;)t.trendAt+=p,t.trend.push(a?t.queue.size:null),t.trend.length>60&&t.trend.shift();if(t.learn&&!t.learn.done&&e>=t.learn.end&&ke(t,t.learn.end),!a||!t.learn||!t.learn.done)return;for(let s of t.lifts){if(s.car){!s.autoActive&&e-s.since>=Me&&(s.autoActive=!0,s.confirmedDown=!1);continue}s.lunchUntil>e||(t.queue.size>0&&(s.idleWhileWaiting+=n,s.idleQueueMs+=n),s.idleWhileWaiting>=_e&&(s.autoActive=!1),!s.confirmedDown&&s.downFlagAt==null&&s.idleQueueMs>=t.downMin*p&&(s.downFlagAt=e))}let r=Math.max(1,t.lifts.filter(s=>s.autoActive).length);t.cameraDecision&&t.cameraDecision.lifts!==r&&(t.cameraDecision={lifts:r,at:e,kind:"updated"})}var Le={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};function de(t){let e=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Helsinki",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(t)),n=i=>e.find(a=>a.type===i).value;return{dow:Le[n("weekday")],min:Number(n("hour"))*60+Number(n("minute"))}}function U(t,e){let{dow:n,min:i}=de(t),a=e[n];if(a&&i>=a[0]&&i<a[1])return{open:!0,opens_in_days:0,opens_time:null,opens_dow:n};for(let r=0;r<8;r++){let o=e[(n+r)%7];if(!o||r===0&&i>=o[0])continue;let s=String(Math.floor(o[0]/60)).padStart(2,"0"),d=String(o[0]%60).padStart(2,"0");return{open:!1,opens_in_days:r,opens_time:`${s}.${d}`,opens_dow:(n+r)%7}}return{open:!1,opens_in_days:0,opens_time:null,opens_dow:n}}function Ae(t){let e=[...t].sort((i,a)=>i-a),n=e.length>>1;return e.length%2?e[n]:(e[n-1]+e[n])/2}var ce=t=>Math.max(5,Math.round(t/5)*5);function C(t,e,n=!1){var V,z,Z,X,ee,te,ne,ie,se,re,ae,oe,le,ue;let i=n?U(e,t.hours):{open:!0,opens_in_days:0,opens_time:null,opens_dow:0},a=i.open?null:"hours";if(((V=t.station)==null?void 0:V.mode)==="break")i={open:!1,opens_in_days:0,opens_time:new Intl.DateTimeFormat("fi-FI",{timeZone:"Europe/Helsinki",hour:"2-digit",minute:"2-digit"}).format(new Date(t.station.until)),opens_dow:0},a="break";else if(((z=t.station)==null?void 0:z.mode)==="closed_day"){let m=U(t.station.until,t.hours);i={...m,open:!1,opens_in_days:m.opens_in_days+1},a="closed_day"}let r=e-t.lastHeartbeat,o=t.tamper?"hidden":r<Se?"fresh":r<R?"ageing":"hidden",s=m=>m.lunchUntil>e,d=t.lifts.filter(s).length,c=t.lifts.filter(m=>m.autoActive).length,u=c===0,l=!!t.learn&&!t.learn.done,f=t.override?t.override.lifts:l?t.cfg.maxLifts:Math.max(1,t.lifts.filter(m=>m.autoActive&&!s(m)).length),g=Math.max(1,t.override||l?f-d:f),h=t.samples.length>=3?Ae(t.samples):ye,w=t.queue.size,M=t.lifts.filter(m=>m.car).length,L=m=>o!=="hidden"&&!!m.car&&e-m.since>=t.slowMin*p,N=t.lifts.filter(L).length,G=Math.max(1,g-N),T=null,A=null,P="",J="off";if(o!=="hidden"&&i.open){let m=Math.max(0,g-M);if(w===0&&m>0)T=0,A=0,P="Ei jonoa";else if(w===0)T=0,A=10,P="alle 10 min";else{let S=w*t.correction/G*h;T=Math.min(90,ce(.7*S)),A=Math.min(90,Math.max(T+5,ce(1.4*S))),P=A>=90&&T>=90?"yli 90 min":`${T}\u2013${A} min`}J=A<=15?"green":A<=30?"yellow":"red"}let E=null;if(n&&i.open&&!t.station){let m=de(e),S=t.hours[m.dow];S&&(E=S[1]-m.min)}return{id:t.cfg.id,name:t.cfg.name,city:t.cfg.city,address:t.cfg.address,lat:t.cfg.lat,lng:t.cfg.lng,open:i.open,closed_reason:a,station_until:(X=(Z=t.station)==null?void 0:Z.until)!=null?X:null,opens_in_days:i.opens_in_days,opens_time:i.opens_time,opens_dow:i.opens_dow,max_lifts:t.cfg.maxLifts,queue_length:o==="hidden"?null:w,in_service:o==="hidden"?null:M,served_today:t.servedToday,served_yesterday:t.servedYesterday,hours:t.hours,active_lifts:o==="hidden"?null:g,auto_lifts:c,auto_fallback:u,lifts_source:t.override?"override":"auto",lifts_mode:t.override?"override":l?"learning":"camera",default_lifts:t.cfg.maxLifts,learning_ends_at:l?t.learn.end:null,learning_remaining_min:l?Math.max(1,Math.ceil((t.learn.end-e)/p)):null,learning_started_at:(te=(ee=t.learn)==null?void 0:ee.start)!=null?te:null,learning_pct:l?Math.round((e-t.learn.start)/(t.learn.end-t.learn.start)*100):null,camera_decision:t.cameraDecision,override_lifts:(ie=(ne=t.override)==null?void 0:ne.lifts)!=null?ie:null,override_by:(re=(se=t.override)==null?void 0:se.by)!=null?re:null,override_set_at:(oe=(ae=t.override)==null?void 0:ae.setAt)!=null?oe:null,override_until:(ue=(le=t.override)==null?void 0:le.until)!=null?ue:null,lift_states:t.lifts.map(m=>L(m)?"slow":m.car?"busy":s(m)?"lunch":m.autoActive?"free":"closed"),lunch:t.lifts.map((m,S)=>s(m)?{lift:S,until:m.lunchUntil,by:m.lunchBy,remaining_min:Math.max(1,Math.ceil((m.lunchUntil-e)/p))}:null).filter(Boolean),lunch_lifts:d,down_flags:t.lifts.map((m,S)=>m.downFlagAt!=null&&!m.car?{lift:S,since:m.downFlagAt,idle_min:Math.floor(m.idleQueueMs/p)}:null).filter(Boolean),confirmed_down:t.lifts.map((m,S)=>m.confirmedDown?S:-1).filter(m=>m>=0),down_min:t.downMin,closes_in_min:E,closing_soon:E!=null&&E>0&&E<=30,trend:o==="hidden"?null:t.trend.filter((m,S)=>(t.trend.length-1-S)%2===0),camera_issue:t.tamper?t.tamper:o==="hidden"?"offline":null,correction:t.correction,correction_next:t.correctionNext,abandoned_today:t.abandonedToday,abandoned_yesterday:t.abandonedYesterday,lift_minutes:t.lifts.map(m=>m.car?Math.floor((e-m.since)/p):null),lift_stats:t.lifts.map(m=>({served:m.served,avg_min:m.served?Math.round(m.minutes/m.served*10)/10:null,served_y:m.servedY,avg_min_y:m.servedY?Math.round(m.minutesY/m.servedY*10)/10:null})),slow_lifts:N,effective_lifts:G,slow_min:t.slowMin,service_min:Math.round(h*10)/10,service_samples:t.samples.length,wait_low_min:T,wait_high_min:A,wait_text:P,status:J,quality:o,last_heartbeat_at:t.lastHeartbeat,last_event_at:t.lastEvent,age_sec:Math.round(r/1e3)}}var fe=45e3,xe=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Helsinki",weekday:"short",hour:"2-digit",hourCycle:"h23"}),Te={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};function F(t){let e=xe.formatToParts(new Date(t));return{hour:Number(e.find(n=>n.type==="hour").value),dow:Te[e.find(n=>n.type==="weekday").value]}}var He={9:1.15,10:.85,11:.85,12:1,13:.95,14:.9,15:1.05,16:1.15,17:1.05},De={10:1.2,11:1.3,12:1.2,13:1,14:.9,15:.85},Ne=[1,1.15,1,.95,1,1.1,1.2];function Ee(t,e,n){var r;let i=(r=n===6?De[e]:He[e])!=null?r:1,a=e===t.simQuietHour?.55:Math.abs(e-t.simQuietHour)===1?.85:1;return i*a*Ne[n]}function Q(t,e){return t+Math.random()*(e-t)}function Re(){let t=0,e=0;for(;!t;)t=Math.random();for(;!e;)e=Math.random();return Math.sqrt(-2*Math.log(t))*Math.cos(2*Math.PI*e)}var O=class{constructor(e,n){b(this,"sites");b(this,"emit");this.emit=e,this.sites=y.map(i=>({cfg:i,lane:[],offline:!1,offlineManual:!1,offlineUntilReal:null,nextHeartbeat:n,seq:0,lifts:Array.from({length:i.maxLifts},(a,r)=>({lunchUntil:0,working:i.maxLifts===4?r<3:!0,pendingDown:!1,car:null,serviceEnd:0,serviceStart:0,freeSince:n,pickupAt:null}))}))}send(e,n){e.offline||this.emit(n)}setLunch(e,n,i){let a=this.sites.find(r=>r.cfg.id===e);return!a||!a.lifts[n]?!1:(a.lifts[n].lunchUntil=i,!0)}setOffline(e,n,i,a,r){let o=this.sites.find(d=>d.cfg.id===e);if(!o)return!1;let s=o.offline;return o.offline=n,o.offlineManual=n&&i,o.offlineUntilReal=n?a:null,s&&!n&&this.resync(o,r),!0}resync(e,n){this.emit({type:"resync",site:e.cfg.id,at:n,queue:e.lane.filter(i=>i.joined).map(i=>({car:i.id,at:i.arrivedAt+fe})),lifts:e.lifts.map(i=>i.car?{car:i.car.id,since:i.serviceStart}:null)}),this.emit({type:"heartbeat",site:e.cfg.id,at:n})}step(e,n){let i=e/36e5,a=F(e);for(let r of this.sites){let o=r.cfg.id,s=.85+.3*(1+Math.sin(2*Math.PI*i/2.5+r.cfg.simPhase))/2,c=r.cfg.simArrivalBasePerHour*s*Ee(r.cfg,a.hour,a.dow)*n/36e5;for(;c>0;)Math.random()<Math.min(c,1)&&this.arrive(r,e),c-=1;Math.random()<20*n/36e5&&this.send(r,{type:"drive_through_filtered",site:o,at:e});for(let l of r.lane)!l.joined&&e-l.arrivedAt>=fe&&(l.joined=!0,this.send(r,{type:"lane_entered",site:o,at:e,car:l.id}));for(let l of[...r.lane])l.joined&&e-l.arrivedAt>l.patience&&(r.lane.splice(r.lane.indexOf(l),1),this.send(r,{type:"left_without_service",site:o,at:e,car:l.id}));let u=()=>r.lifts.filter(l=>l.working&&!l.pendingDown).length;r.lifts.forEach((l,f)=>{if(l.car&&e>=l.serviceEnd&&(this.send(r,{type:"lift_vacated",site:o,at:e,lift:f,car:l.car.id}),l.car=null,l.freeSince=e,l.pickupAt=null,l.pendingDown&&(l.working=!1,l.pendingDown=!1)),l.working&&!l.pendingDown){let g=r.cfg.maxLifts===4?.014285714285714285:.006666666666666667;u()>1&&Math.random()<g*n/p&&(l.car?l.pendingDown=!0:l.working=!1)}else l.working||Math.random()<1/35*n/p&&(l.working=!0,l.freeSince=e);if(l.working&&!l.pendingDown&&!l.car&&e>=l.lunchUntil){let g=r.lane.find(h=>h.joined);if(g){if(l.pickupAt==null&&(l.pickupAt=e+Q(.7,2)*p),e>=l.pickupAt){r.lane.splice(r.lane.indexOf(g),1),l.car=g,l.pickupAt=null;let h=Math.random()<.05?Q(15,30):Math.min(9.5,Math.max(5.5,r.cfg.simServiceMeanMin+Re()*.7));l.serviceEnd=e+h*p,l.serviceStart=e,this.send(r,{type:"lift_occupied",site:o,at:e,lift:f,car:g.id})}}else l.pickupAt=null}}),e>=r.nextHeartbeat&&(this.send(r,{type:"heartbeat",site:o,at:e}),r.nextHeartbeat=e+3e4)}}arrive(e,n){e.seq++,e.lane.push({id:`${e.cfg.id}-${e.seq}`,arrivedAt:n,joined:!1,patience:Q(25,60)*p})}truth(e){let n=this.sites.find(i=>i.cfg.id===e);return{offline:n.offline,offline_manual:n.offlineManual,lane:n.lane.filter(i=>i.joined).length,working_lifts:n.lifts.filter(i=>i.working&&!i.pendingDown).length}}};var q=1e3,$e=21,K=30,Oe={olari:"1111",puotila:"2222",kannelmaki:"3333","ala-tikkurila":"4444",jarvenpaa:"5555"},me=["su","ma","ti","ke","to","pe","la"],Pe=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],I=t=>`${String(Math.floor(t/60)).padStart(2,"0")}.${String(t%60).padStart(2,"0")}`,x=t=>Math.round(t*10)/10,he=t=>Math.round(t*1e3)/1e3;function Ue(){let t=0,e=0;for(;!t;)t=Math.random();for(;!e;)e=Math.random();return Math.sqrt(-2*Math.log(t))*Math.cos(2*Math.PI*e)}var W=class{constructor(e={}){b(this,"pins",{...Oe});b(this,"adminPin","9999");b(this,"sessions",new Map);b(this,"log",[]);b(this,"alerts",[]);b(this,"learnMinutes",30);b(this,"slowMin",15);b(this,"downMin",30);b(this,"speed");b(this,"realBase",Date.now());b(this,"simBase",Date.now());b(this,"state",new Map);b(this,"recent",[]);b(this,"sim");b(this,"lastStep");b(this,"realHours",!1);b(this,"randomOutages");b(this,"history",[]);b(this,"accuracy",{});b(this,"receiptsToday",{});b(this,"health",{});b(this,"quietCache",new Map);b(this,"lunchSeen",new Set);b(this,"warming",!0);var r,o;this.speed=(r=e.speed)!=null?r:1,this.randomOutages=(o=e.randomOutages)!=null?o:!0;let n=this.simNow();this.history=this.simulateHistory(n);let i=n-180*p;for(let s of y)this.state.set(s.id,j(s,i));this.sim=new O(s=>this.ingest(s),i);for(let s=i;s<n;s+=1e4){this.sim.step(s,1e4);for(let d of this.state.values())Y(d,s)}let a=this.history[this.history.length-1];for(let s of y){let d=this.state.get(s.id),c=a.sites[s.id];d.servedYesterday=c.served,d.abandonedYesterday=c.abandoned,c.lifts.forEach((f,g)=>{d.lifts[g].servedY=f.served,d.lifts[g].minutesY=f.minutes});let u=1,l=[];for(let f of this.history){if(!f.open)continue;let g=f.sites[s.id];g.served&&(u=he(.7*u+.3*(g.receipts/g.served)),l.push({day:f.day,camera:g.served,receipts:g.receipts,err_pct:x((g.served-g.receipts)/g.receipts*100),factor_after:u,simulated:!0}))}this.accuracy[s.id]=l,d.correction=u,this.receiptsToday[s.id]=null,this.health[s.id]={signal:-72-Math.random()*18,dataMb:0,tempBase:8+Math.random()*3,offlineAlerted:!1,tamperAlerted:!1,tamperUntilReal:null,lastMinute:n},this.health[s.id].dataMb=x((n-D(n-864e5))/36e5*.9)}for(let s of this.state.values())$(s,n,this.learnMinutes);this.warming=!1,this.lastStep=n}simulateHistory(e){let n=D(e-864e5),i=[];for(let a=$e;a>=1;a--){let r=D(n-a*864e5-6e4),o=new Date(r+12*36e5).getUTCDay(),s={day:k(r+36e5),dow:o,open:!!H[o],sites:{}},d={};for(let h of y)s.sites[h.id]={served:0,abandoned:0,receipts:0,hourly:Array(24).fill(null),lifts:Array.from({length:h.maxLifts},()=>({served:0,minutes:0}))},d[h.id]={s:Array(24).fill(0),n:Array(24).fill(0)};i.push(s);let c=H[o];if(!c)continue;let u=r+c[0]*p,l=r+c[1]*p,f=new Map;for(let h of y)f.set(h.id,j(h,u));let g=new O(h=>{let w=f.get(h.site);w&&B(w,h)},u);for(let h=u;h<l;h+=3e4){g.step(h,3e4);let w=Math.floor((h-r)/36e5);for(let[M,L]of f)d[M].s[w]+=L.queue.size,d[M].n[w]++}for(let h of y){let w=f.get(h.id),M=s.sites[h.id];M.served=w.servedToday,M.abandoned=w.abandonedToday,M.lifts=w.lifts.map(L=>({served:L.served,minutes:L.minutes})),M.receipts=Math.max(0,Math.round(w.servedToday*(1+h.simReceiptBias)+Ue()*1.5)),M.hourly=d[h.id].s.map((L,N)=>d[h.id].n[N]?x(L/d[h.id].n[N]):null)}}return i}quietHint(e,n){let{dow:i}=F(n),a=i===6?6:1,r=e+":"+a;if(this.quietCache.has(r))return this.quietCache.get(r);let o=this.history.filter(c=>c.open&&(a===6?c.dow===6:c.dow>=1&&c.dow<=5)),s=null,d=H[a];if(o.length>=5){let c=-1,u=1/0;for(let l=Math.floor(d[0]/60);l<Math.floor(d[1]/60);l++){let f=o.map(h=>h.sites[e].hourly[l]).filter(h=>h!=null);if(!f.length)continue;let g=f.reduce((h,w)=>h+w,0)/f.length;g<u&&(u=g,c=l)}c>=0&&(s={from:c,to:c+1,days:o.length})}return this.quietCache.set(r,s),s}maybeStartLearning(e,n){if(!(e.learn&&k(e.learn.start)===k(n))&&!e.station){if(!this.realHours){$(e,n,this.learnMinutes);return}U(n,e.hours).open&&$(e,n,this.learnMinutes)}}setLearnMinutes(e,n){let i=Math.round(Number(e));if(!(i>=5&&i<=120))return"5\u2013120 min";this.learnMinutes=i;for(let a of this.state.values())a.learn&&!a.learn.done&&(a.learn.end=a.learn.start+i*p);return this.addLog(n,null,`Nostimien opetteluikkuna: ${i} min`,`Lift learning window: ${i} min`),null}setSlowMin(e,n){let i=Math.round(Number(e));if(!(i>=15&&i<=20))return"15\u201320 min";this.slowMin=i;for(let a of this.state.values())a.slowMin=i;return this.addLog(n,null,`Hitaan auton raja: ${i} min`,`Slow-car threshold: ${i} min`),null}setDownMin(e,n){let i=Math.round(Number(e));if(!(i>=15&&i<=120))return"15\u2013120 min";this.downMin=i;for(let a of this.state.values())a.downMin=i;return this.addLog(n,null,`"Nostin ehk\xE4 rikki" -raja: ${i} min`,`'Lift possibly down' threshold: ${i} min`),null}restartLearning(e,n){let i=this.state.get(e);return i?($(i,this.simNow(),this.learnMinutes),this.addLog(n,e,`Nostimien opettelu aloitettu alusta (${this.learnMinutes} min)`,`Lift learning restarted (${this.learnMinutes} min)`),!0):!1}simNow(){return this.simBase+(Date.now()-this.realBase)*this.speed}setSpeed(e){this.simBase=this.simNow(),this.realBase=Date.now(),this.speed=e}ingest(e){let n=this.state.get(e.site);n&&(B(n,e),!this.warming&&e.type!=="heartbeat"&&(this.recent.push({...e,realAt:Date.now()}),this.recent.length>60&&this.recent.shift()))}step(){let e=this.simNow(),n=e-this.lastStep,i=Math.max(1,Math.ceil(n/1e4));for(let r=1;r<=i;r++){let o=this.lastStep+n*r/i;this.sim.step(o,n/i);for(let s of this.state.values())this.maybeStartLearning(s,o),Y(s,o)}this.lastStep=e;let a=Date.now();for(let r of this.sim.sites)r.offline&&!r.offlineManual&&r.offlineUntilReal&&a>=r.offlineUntilReal&&this.sim.setOffline(r.cfg.id,!1,!1,null,e);if(this.randomOutages&&!this.sim.sites.some(r=>r.offline)&&Math.random()<q/(15*6e4)){let r=this.sim.sites[Math.floor(Math.random()*this.sim.sites.length)];this.sim.setOffline(r.cfg.id,!0,!1,a+(3+Math.random()*3)*6e4,e)}if(this.randomOutages&&!y.some(r=>this.state.get(r.id).tamper)&&Math.random()<q/(60*6e4)){let r=y[Math.floor(Math.random()*y.length)];this.setTamper(r.id,Math.random()<.6?"snow":"lens_blocked",null,a+(2+Math.random()*3)*6e4)}for(let r of y)this.updateHealth(r.id,e,a)}updateHealth(e,n,i){let a=this.health[e],r=this.state.get(e),o=this.sim.sites.find(c=>c.cfg.id===e),s=(n-a.lastMinute)/p;a.lastMinute=n,o.offline||(a.dataMb=x(a.dataMb+s*.015+Math.random()*.002)),a.signal=Math.max(-105,Math.min(-65,a.signal+(Math.random()-.5)*2)),r.tamper&&a.tamperUntilReal&&i>=a.tamperUntilReal&&this.setTamper(e,null,null);let d=n-r.lastHeartbeat;o.offline&&!o.offlineManual&&d>=R&&!a.offlineAlerted&&(a.offlineAlerted=!0,this.alerts.push({at:n,site:e,kind:"offline",minutes:Math.floor(d/p),sms:!0})),!o.offline&&a.offlineAlerted&&(a.offlineAlerted=!1,this.alerts.push({at:n,site:e,kind:"restored",sms:!1})),r.lifts.forEach((c,u)=>{let l=e+":"+u;c.downFlagAt!=null&&!this.lunchSeen.has("f"+l)&&(this.lunchSeen.add("f"+l),this.alerts.push({at:n,site:e,kind:"lift_down",lift:u,minutes:Math.floor(c.idleQueueMs/p),sms:!1})),c.downFlagAt==null&&this.lunchSeen.delete("f"+l),c.lunchUntil>n?this.lunchSeen.add("l"+l):this.lunchSeen.has("l"+l)&&(this.lunchSeen.delete("l"+l),this.addLog(null,e,`Lounastauko p\xE4\xE4ttyi: nostin ${u+1} palasi laskentaan`,`Lunch break ended: lift ${u+1} is back in the count`,!0))}),this.alerts.length>200&&this.alerts.splice(0,this.alerts.length-200)}setTamper(e,n,i,a=null){let r=this.state.get(e);if(!r)return!1;let o=this.health[e],s=this.simNow();return n?(r.tamper=n,o.tamperUntilReal=a,this.alerts.push({at:s,site:e,kind:"tamper",tamper:n,sms:!0})):r.tamper&&(r.tamper=null,o.tamperUntilReal=null,this.alerts.push({at:s,site:e,kind:"tamper_cleared",sms:!1})),i&&this.addLog(i,e,n?`Demo: kameran h\xE4iri\xF6 simuloitu (${n==="snow"?"lunta linssiss\xE4":"linssi peitetty"})`:"Kameran h\xE4iri\xF6 poistettu",n?`Demo: camera tamper simulated (${n==="snow"?"snow on lens":"lens blocked"})`:"Camera tamper cleared"),!0}simulateOutage(e,n){let i=this.sim.setOffline(e,!0,!1,Date.now()+Math.max(2e4,6*p/this.speed),this.simNow());return i&&this.addLog(n,e,"Demo: yhteyskatkos simuloitu (6 min)","Demo: connection outage simulated (6 min)"),i}allSnapshots(){var a,r;let e=this.simNow(),n=y.map(o=>({...C(this.state.get(o.id),e,this.realHours),quiet_hours:this.quietHint(o.id,e)})),i=n.filter(o=>o.quality!=="hidden"&&o.open);return i.sort((o,s)=>o.wait_high_min-s.wait_high_min||o.queue_length-s.queue_length||s.active_lifts-s.in_service-(o.active_lifts-o.in_service)),{generated_at:e,simulated:!0,sim:{speed:this.speed},quietest:(r=(a=i[0])==null?void 0:a.id)!=null?r:null,sites:n}}siteStatus(e){let n=this.allSnapshots(),i=n.sites.find(a=>a.id===e);return i?{generated_at:n.generated_at,simulated:!0,sim:n.sim,quietest:n.quietest,site:i}:null}staffLogin(e,n,i){return!this.pins[e]||this.pins[e]!==n?null:(this.sessions.set(i,{role:"site",site:e,exp:Date.now()+12*36e5,pin:n}),i)}adminLogin(e,n){return e!==this.adminPin?null:(this.sessions.set(n,{role:"admin",exp:Date.now()+12*36e5,pin:e}),n)}session(e){let n=e==null?void 0:e.replace(/^Bearer /,""),i=n?this.sessions.get(n):void 0;return i&&i.exp>Date.now()?i:null}canControl(e,n){return!!e&&(e.role==="admin"||e.site===n)}who(e,n=!1){if(!e)return n?"Demo control":"Demo-ohjaus";let i="PIN \u2022\u2022"+e.pin.slice(-2);if(e.role==="admin")return n?`Admin (${i})`:`Yll\xE4pito (${i})`;let a=y.find(r=>r.id===e.site).name;return n?`${a}, staff (${i})`:`${a}, henkil\xF6st\xF6 (${i})`}addLog(e,n,i,a,r=!1){this.log.push({at:this.simNow(),who:r?"J\xE4rjestelm\xE4":this.who(e),who_en:r?"System":this.who(e,!0),site:n,text:i,text_en:a}),this.log.length>300&&this.log.shift()}todaysLog(){let e=k(this.simNow());return this.log.filter(n=>k(n.at)===e).slice().reverse()}setOverride(e,n,i=null){let a=this.state.get(e);if(!a)return{ok:!1,code:404,error:"unknown site"};let r=this.simNow();if(n==null)a.override=null,this.addLog(i,e,"Nostimet: palautettu kameran laskentaan","Lifts: back to camera count");else{let o=Math.round(Number(n));if(!(o>=1&&o<=a.cfg.maxLifts))return{ok:!1,code:400,error:`1\u2013${a.cfg.maxLifts}`};a.override={lifts:o,setAt:r,until:D(r),by:this.who(i)},this.addLog(i,e,`Nostimet: k\xE4sin ${o} / ${a.cfg.maxLifts} (p\xE4iv\xE4n loppuun)`,`Lifts: set manually to ${o} / ${a.cfg.maxLifts} (until end of day)`)}return{ok:!0,snap:C(a,r,this.realHours)}}setLunch(e,n,i,a){let r=this.state.get(e);if(!r)return"unknown site";let o=Math.round(Number(n));if(!(o>=0&&o<r.cfg.maxLifts))return`1\u2013${r.cfg.maxLifts}`;let s=this.simNow(),d=r.lifts[o];if(i){if(r.lifts.filter(c=>c.lunchUntil>s).length>=r.cfg.maxLifts-1&&!(d.lunchUntil>s))return"V\xE4hint\xE4\xE4n yksi nostin j\xE4\xE4 k\xE4ytt\xF6\xF6n / at least one lift stays open";d.lunchUntil=s+K*p,d.lunchBy=this.who(a),d.idleQueueMs=0,d.downFlagAt=null,this.sim.setLunch(e,o,d.lunchUntil),this.addLog(a,e,`Lounastauko: nostin ${o+1}, ${K} min`,`Lunch break: lift ${o+1}, ${K} min`)}else d.lunchUntil=0,d.lunchBy=null,d.idleQueueMs=0,this.sim.setLunch(e,o,0),this.lunchSeen.delete("l"+e+":"+o),this.addLog(a,e,`Lounastauko lopetettu: nostin ${o+1}`,`Lunch break ended early: lift ${o+1}`);return null}liftFlag(e,n,i,a){let r=this.state.get(e);if(!r)return"unknown site";let o=Math.round(Number(n)),s=r.lifts[o];if(!s)return"lift";if(i==="confirm")s.confirmedDown=!0,s.autoActive=!1,s.downFlagAt=null,this.addLog(a,e,`Nostin ${o+1} vahvistettu rikki (pois laskennasta)`,`Lift ${o+1} confirmed down (out of the count)`);else if(i==="dismiss")s.downFlagAt=null,s.idleQueueMs=0,this.addLog(a,e,`Nostin ${o+1}: kuitattu, toimii`,`Lift ${o+1}: dismissed, it works`);else if(i==="restore")s.confirmedDown=!1,s.autoActive=!0,s.idleWhileWaiting=0,s.idleQueueMs=0,this.addLog(a,e,`Nostin ${o+1} korjattu, takaisin laskentaan`,`Lift ${o+1} fixed, back in the count`);else return"action";return null}setReceipts(e,n,i){let a=this.state.get(e);if(!a)return"unknown site";let r=Math.round(Number(n));return r>=0&&r<=2e3?(this.receiptsToday[e]=r,a.servedToday>0&&r>0&&(a.correctionNext=he(.7*a.correction+.3*(r/a.servedToday))),this.addLog(i,e,`P\xE4iv\xE4n kuitit: ${r} (kamera ${a.servedToday})`,`Today's receipts: ${r} (camera ${a.servedToday})`),null):"0\u20132000"}siteSnapshot(e){let n=this.state.get(e);return n?{...C(n,this.simNow(),this.realHours),quiet_hours:this.quietHint(e,this.simNow())}:null}setStation(e,n,i,a){let r=this.state.get(e);if(!r)return!1;let o=this.simNow();if(n==="open")r.station=null,this.addLog(a,e,"Asema: avattu","Station: opened");else if(n==="break"){let s=Math.min(240,Math.max(5,Math.round(i||30)));r.station={mode:"break",until:o+s*p},this.addLog(a,e,`Asema: tauko ${s} min`,`Station: break ${s} min`)}else if(n==="closed_day")r.station={mode:"closed_day",until:D(o)},this.addLog(a,e,"Asema: suljettu loppup\xE4iv\xE4ksi","Station: closed for the rest of the day");else return!1;return!0}setCamera(e,n,i){return this.setOffline(e,n)?(this.addLog(i,e,n?"Kamera: merkitty pois k\xE4yt\xF6st\xE4":"Kamera: palautettu",n?"Camera: marked down":"Camera: restored"),!0):!1}setHours(e,n,i){let a=this.state.get(e);if(!a)return"unknown site";if(!n||typeof n!="object")return"virheelliset ajat";let r={};for(let c=0;c<7;c++){let u=n[c];if(u==null){r[c]=null;continue}if(!Array.isArray(u)||u.length!==2)return"virheelliset ajat";let l=Math.round(Number(u[0])),f=Math.round(Number(u[1]));if(!(l>=0&&f<=1440&&l<f))return`${me[c]}: avaus ennen sulkemista`;r[c]=[l,f]}a.hours=r;let o=[1,2,3,4,5,6,0],s=o.map(c=>`${me[c]} ${r[c]?I(r[c][0])+"\u2013"+I(r[c][1]):"suljettu"}`).join(", "),d=o.map(c=>`${Pe[c]} ${r[c]?I(r[c][0]).replace(".",":")+"\u2013"+I(r[c][1]).replace(".",":"):"closed"}`).join(", ");return this.addLog(i,e,`Aukioloajat: ${s}`,`Opening hours: ${d}`),null}setPin(e,n,i){if(!this.pins[e])return"unknown site";let a=String(n!=null?n:"");if(!/^\d{4,6}$/.test(a))return"PIN: 4\u20136 numeroa / digits";if(a===this.adminPin||Object.entries(this.pins).some(([r,o])=>r!==e&&o===a))return"PIN on jo k\xE4yt\xF6ss\xE4 / already in use";this.pins[e]=a;for(let[r,o]of this.sessions)o.role==="site"&&o.site===e&&this.sessions.delete(r);return this.addLog(i,e,`Henkil\xF6st\xF6n PIN vaihdettu (uusi p\xE4\xE4ttyy \u2022\u2022${a.slice(-2)})`,`Staff PIN changed (new one ends \u2022\u2022${a.slice(-2)})`),null}cameras(){let e=this.simNow(),{hour:n}=F(e),i=n*60+new Date(e).getUTCMinutes(),a=-3+2*Math.sin(2*Math.PI*(i-840)/1440);return Object.fromEntries(y.map(r=>{let o=this.state.get(r.id),s=this.sim.sites.find(l=>l.cfg.id===r.id),d=this.health[r.id],c=!s.offline&&e-o.lastHeartbeat<R,u=d.signal>-75?4:d.signal>-85?3:d.signal>-95?2:1;return[r.id,{online:c,offline:s.offline,manual:s.offlineManual,last_event_at:o.lastEvent,last_heartbeat_at:o.lastHeartbeat,tamper:o.tamper,signal_dbm:s.offline?null:Math.round(d.signal),signal_bars:s.offline?0:u,network:"4G",data_mb_today:d.dataMb,data_mb_month_cap:3e3,ir_on:i<525||i>=925,temp_c:x(a+d.tempBase),outdoor_c:x(a)}]}))}adminHistory(){let e=this.simNow(),n=k(e),i=this.history.filter(s=>s.open).slice(-7),a=Object.fromEntries(y.map(s=>{let d=this.state.get(s.id);return[s.id,{today:{abandoned:d.abandonedToday,served:d.servedToday},days:i.map(c=>({day:c.day,dow:c.dow,abandoned:c.sites[s.id].abandoned,served:c.sites[s.id].served}))}]})),r=Object.fromEntries(y.map(s=>{let d=Array.from({length:7},()=>Array(24).fill(null));for(let c=0;c<7;c++)for(let u=0;u<24;u++){let l=this.history.filter(f=>f.dow===c&&f.open).map(f=>f.sites[s.id].hourly[u]).filter(f=>f!=null);l.length&&(d[c][u]=x(l.reduce((f,g)=>f+g,0)/l.length))}return[s.id,d]})),o=Object.fromEntries(y.map(s=>{let d=this.state.get(s.id);return[s.id,{today:{day:n,camera:d.servedToday,receipts:this.receiptsToday[s.id],err_pct:this.receiptsToday[s.id]?x((d.servedToday-this.receiptsToday[s.id])/this.receiptsToday[s.id]*100):null},factor:d.correction,factor_next:d.correctionNext,history:this.accuracy[s.id].slice(-14).reverse()}]}));return{simulated:!0,days:this.history.length,from:this.history[0].day,to:this.history[this.history.length-1].day,lost:a,heat:r,accuracy:o}}adminOverview(){return{...this.allSnapshots(),real_hours:this.realHours,learn_minutes:this.learnMinutes,slow_min:this.slowMin,down_min:this.downMin,speed:this.speed,pins:{...this.pins},cameras:this.cameras(),alerts:this.alerts.slice(-60).reverse(),log:this.todaysLog()}}demoState(){return{speed:this.speed,sim_now:this.simNow(),random_outages:this.randomOutages,real_hours:this.realHours,sites:y.map(e=>({id:e.id,name:e.name,...this.sim.truth(e.id),tamper:this.state.get(e.id).tamper})),recent_events:this.recent.slice(-25).reverse()}}setOffline(e,n){let i=this.simNow();if(!this.sim.setOffline(e,n,!0,null,i))return!1;if(n){let a=this.state.get(e);a.lastHeartbeat=Math.min(a.lastHeartbeat,i-4*p)}return!0}};var v=(t,e)=>({status:200,body:t,cache:e}),_=(t,e)=>({status:t,body:{error:e}});function pe(t,e,n,i,a,r){var d,c;let o,s=t.session(a);if(e==="GET"&&n==="/v1/sites")return v(t.allSnapshots(),"public, max-age=5");if(e==="GET"&&(o=n.match(/^\/v1\/sites\/([^/]+)\/status$/))){let u=t.siteStatus(o[1]);return u?v(u,"public, max-age=5"):_(404,"unknown site")}if(e==="POST"&&(o=n.match(/^\/v1\/staff\/([^/]+)\/login$/))){let u=t.staffLogin(o[1],String((d=i.pin)!=null?d:""),r());return u?v({token:u,site:o[1]}):_(401,"V\xE4\xE4r\xE4 PIN")}if(o=n.match(/^\/v1\/staff\/([^/]+)\/(status|override|lunch)$/)){let u=o[1];if(!s||s.role!=="site"||s.site!==u)return _(403,"T\xE4m\xE4 PIN ei avaa t\xE4t\xE4 asemaa");if(e==="GET"&&o[2]==="status"){let l=t.siteSnapshot(u);return l?v(l,"no-store"):_(404,"unknown site")}if(e==="POST"&&o[2]==="override"){let l=t.setOverride(u,i.lifts,s);return l.ok?v(l.snap):_(l.code,l.error)}if(e==="POST"&&o[2]==="lunch"){let l=t.setLunch(u,i.lift,i.action!=="end",s);return l?_(400,l):v(t.siteSnapshot(u))}}if(e==="POST"&&n==="/v1/admin/login"){let u=t.adminLogin(String((c=i.pin)!=null?c:""),r());return u?v({token:u}):_(401,"V\xE4\xE4r\xE4 PIN")}if(n.startsWith("/v1/admin/")){if(!s||s.role!=="admin")return _(403,"Vain yll\xE4pito");if(e==="GET"&&n==="/v1/admin/overview")return v(t.adminOverview(),"no-store");if(e==="GET"&&n==="/v1/admin/history")return v(t.adminHistory(),"no-store");if(e==="POST"&&n==="/v1/admin/settings"){let u=null;return i.learn_minutes!=null&&(u=t.setLearnMinutes(i.learn_minutes,s)),!u&&i.slow_min!=null&&(u=t.setSlowMin(i.slow_min,s)),!u&&i.down_min!=null&&(u=t.setDownMin(i.down_min,s)),u?_(400,u):v({learn_minutes:t.learnMinutes,slow_min:t.slowMin,down_min:t.downMin})}if(e==="POST"&&n==="/v1/admin/speed"){let u=Number(i.speed);return[1,5,20].includes(u)?(t.setSpeed(u),v({speed:u})):_(400,"1|5|20")}if(e==="POST"&&n==="/v1/admin/hours-mode")return t.realHours=!!i.real,v({real_hours:t.realHours});if(e==="POST"&&(o=n.match(/^\/v1\/admin\/sites\/([^/]+)\/(override|station|camera|hours|pin|relearn|lunch|liftflag|receipts|tamper|outage)$/))){let[,u,l]=o;if(l==="override"){let f=t.setOverride(u,i.lifts,s);return f.ok?v(f.snap):_(f.code,f.error)}if(l==="station")return t.setStation(u,String(i.mode),Number(i.minutes),s)?v({ok:!0}):_(400,"mode");if(l==="camera")return t.setCamera(u,!!i.offline,s)?v({ok:!0}):_(404,"unknown site");if(l==="hours"){let f=t.setHours(u,i.hours,s);return f?_(400,f):v({ok:!0})}if(l==="relearn")return t.restartLearning(u,s)?v({ok:!0}):_(404,"unknown site");if(l==="pin"){let f=t.setPin(u,i.pin,s);return f?_(400,f):v({ok:!0})}if(l==="lunch"){let f=t.setLunch(u,i.lift,i.action!=="end",s);return f?_(400,f):v({ok:!0})}if(l==="liftflag"){let f=t.liftFlag(u,i.lift,String(i.action),s);return f?_(400,f):v({ok:!0})}if(l==="receipts"){let f=t.setReceipts(u,i.count,s);return f?_(400,f):v({ok:!0})}if(l==="tamper"){let f=i.kind==="snow"||i.kind==="lens_blocked"?i.kind:null;return t.setTamper(u,f,s)?v({ok:!0}):_(404,"unknown site")}if(l==="outage")return t.simulateOutage(u,s)?v({ok:!0}):_(404,"unknown site")}}if(e==="GET"&&n==="/v1/demo/state")return v(t.demoState(),"no-store");if(e==="POST"&&n==="/v1/demo/speed"){let u=Number(i.speed);return[1,5,20].includes(u)?(t.setSpeed(u),v({speed:u})):_(400,"1|5|20")}return e==="POST"&&n==="/v1/demo/outages"?(t.randomOutages=!!i.enabled,v({random_outages:t.randomOutages})):e==="POST"&&n==="/v1/demo/hours"?(t.realHours=!!i.real,v({real_hours:t.realHours})):_(404,"not found")}var ge=new W({speed:1,randomOutages:!0});setInterval(()=>ge.step(),q);var Ce=window.fetch.bind(window),Fe=()=>Math.random().toString(36).slice(2)+Date.now().toString(36)+Math.random().toString(36).slice(2);window.fetch=async(t,e)=>{var d;let n=typeof t=="string"?t:t instanceof URL?t.href:t.url,i=n.indexOf("/v1/");if(i<0)return Ce(t,e);let a=n.slice(i).split("?")[0],r=((d=e==null?void 0:e.method)!=null?d:"GET").toUpperCase(),o={};try{o=e!=null&&e.body?JSON.parse(String(e.body)):{}}catch{o={}}let s=pe(ge,r,a,o,new Headers(e==null?void 0:e.headers).get("Authorization"),Fe);return new Response(JSON.stringify(s.body),{status:s.status,headers:{"Content-Type":"application/json"}})};})();
 </script>
 <script>/* Drive-in Rengaspalvelu — live queue widget (demo). Vanilla JS, no dependencies.
    Usage: <div data-jq-widget data-mode="all|single" data-site="olari"></div><script src="widget.js" defer><\/script>
@@ -705,9 +896,14 @@ html { scroll-behavior: smooth; }
       sample: "Esimerkkidata", quietest: "Hiljaisin nyt", liftsLabel: "Nostimet", liftsInUse: "Nostimia käytössä", inService: "Vaihdossa nyt",
       servedToday: "Vaihdettu tänään", avgChange: "Min / vaihto (keskim.)", under10: "alle 10 min", over90: "yli 90 min", now: "Heti", noWait: "Ei odotusta",
       waitMin: "Arvioitu odotus, min", goStraight: "pääset heti vaihtoon", inLine: function (n) { return n + (n === 1 ? " auto jonossa" : " autoa jonossa"); },
-      closedTomorrow: function (x) { return "Suljettu · avaa huomenna klo " + x; }, closedOn: function (d, x) { return "Suljettu · avaa " + d + " klo " + x; },
-      noData: "Jonotietoja ei juuri nyt saatavilla", noDataRow: "Ei juuri nyt saatavilla – kamera ei vastaa", queueInfo: "Jonotiedot",
-      noDataLong: function (m) { return "Aseman kamera ei ole lähettänyt tietoja " + m + " minuuttiin, joten emme näytä arviota. Asema voi silti olla auki."; },
+      closedTomorrow: function (x) { return "Suljettu · avaa huomenna klo " + x; }, closedOn: function (d, x) { return "Suljettu · avaa " + d + " klo " + x; }, onBreak: function (x) { return "Tauko · jatkuu klo " + x; }, breakLbl: "Tauko",
+      noData: "Arvio ei saatavilla", noDataRow: "Arvio ei saatavilla", queueInfo: "Jonotiedot",
+      noDataLong: function () { return "Emme saa juuri nyt luotettavaa tietoa aseman jonosta, joten emme näytä arviota. Asema voi silti olla auki."; },
+      stillToday: "Ehdit vielä tänään", stillTodaySub: function (x) { return "Sulkeutuu klo " + x + " – kaikki jonossa sulkemishetkellä olevat palvellaan."; },
+      quietHint: function (a, b) { return "Yleensä hiljaisinta klo " + a + "–" + b; }, trendLabel: "Jono viimeisen tunnin aikana",
+      notifyBtn: function (n) { return "Ilmoita kun jono alle " + n + " min"; }, notifyLimit: "Raja", notifyOn: function (n) { return "Ilmoitus päällä: jono alle " + n + " min"; }, notifyCancel: "Peru",
+      notifyAlready: function (n) { return "Jono on jo alle " + n + " min – tervetuloa!"; }, notifyHit: function (nm, w) { return nm + ": jono nyt alle raja-ajan (arvio " + w + ")."; },
+      notifySet: function (nm, n) { return "Ilmoitamme, kun " + nm + " -aseman jono on alle " + n + " min."; },
       apiDownLong: "Jonotiedot eivät ole saatavilla. Yritämme hetken päästä uudelleen.", details: "Näytä tarkemmin", allStations: "Kaikki toimipisteet",
       pill: { green: "Lyhyt jono", yellow: "Kohtalainen jono", red: "Pitkä jono", off: "Ei tietoa" }, oldData: "Tiedot hieman vanhoja",
       locFail: "Sijaintia ei saatu – asemat oletusjärjestyksessä.", busy: "Auto vaihdossa", free: "Vapaa", closedLift: "Ei käytössä",
@@ -725,9 +921,14 @@ html { scroll-behavior: smooth; }
       sample: "Sample data", quietest: "Quietest now", liftsLabel: "Lifts", liftsInUse: "Lifts in use", inService: "Being serviced",
       servedToday: "Done today", avgChange: "Min / change (avg)", under10: "under 10 min", over90: "over 90 min", now: "Now", noWait: "No wait",
       waitMin: "Estimated wait, min", goStraight: "drive straight in", inLine: function (n) { return n + (n === 1 ? " car in line" : " cars in line"); },
-      closedTomorrow: function (x) { return "Closed · opens tomorrow at " + x; }, closedOn: function (d, x) { return "Closed · opens " + d + " at " + x; },
-      noData: "Queue data not available right now", noDataRow: "Not available right now – camera not responding", queueInfo: "Queue data",
-      noDataLong: function (m) { return "The station's camera hasn't sent data for " + m + " minutes, so we're not showing an estimate. The station may still be open."; },
+      closedTomorrow: function (x) { return "Closed · opens tomorrow at " + x; }, closedOn: function (d, x) { return "Closed · opens " + d + " at " + x; }, onBreak: function (x) { return "On a break · back at " + x; }, breakLbl: "On a break",
+      noData: "Estimate not available", noDataRow: "Estimate not available", queueInfo: "Queue data",
+      noDataLong: function () { return "We can't get reliable queue data from this station right now, so we're not showing an estimate. The station may still be open."; },
+      stillToday: "You can still make it today", stillTodaySub: function (x) { return "Closes at " + x + " – everyone in line at closing time is served."; },
+      quietHint: function (a, b) { return "Usually quietest " + a + "–" + b; }, trendLabel: "Queue over the last hour",
+      notifyBtn: function (n) { return "Notify me when the wait is under " + n + " min"; }, notifyLimit: "Limit", notifyOn: function (n) { return "Notification on: wait under " + n + " min"; }, notifyCancel: "Cancel",
+      notifyAlready: function (n) { return "The wait is already under " + n + " min – come on in!"; }, notifyHit: function (nm, w) { return nm + ": the wait is now under your limit (estimate " + w + ")."; },
+      notifySet: function (nm, n) { return "We'll let you know when the wait at " + nm + " is under " + n + " min."; },
       apiDownLong: "Queue data is not available. We'll try again shortly.", details: "Show details", allStations: "All stations",
       pill: { green: "Short queue", yellow: "Moderate queue", red: "Long queue", off: "No data" }, oldData: "Data slightly old",
       locFail: "Couldn't get your location – stations in default order.", busy: "Car on lift", free: "Free", closedLift: "Not in use",
@@ -772,6 +973,7 @@ html { scroll-behavior: smooth; }
   function closedText(s) {
     var t = T(), x = lang === "en" ? String(s.opens_time).replace(".", ":") : s.opens_time;
     if (!s.opens_time) return t.closed;
+    if (s.closed_reason === "break") return t.onBreak(x);
     if (s.opens_in_days === 0) return t.closedOpensAt(x);
     if (s.opens_in_days === 1) return t.closedTomorrow(x);
     return t.closedOn(WD[lang][s.opens_dow], x);
@@ -780,6 +982,62 @@ html { scroll-behavior: smooth; }
   function kind(s) { return !s.open ? "closed" : s.quality === "hidden" ? "nodata" : "live"; }
   function statusOf(s) { return kind(s) === "live" ? s.status : "off"; }
   function cars(n) { return lang === "fi" ? (n === 1 ? "auto" : "autoa") : (n === 1 ? "car" : "cars"); }
+
+  // ---- trend sparkline (last ~60 min of queue length), subtle on purpose ----
+  var COLORS = { green: "#3D9A5F", yellow: "#D4A017", red: "#C4453C", off: "#8A8A8A" };
+  function spark(s, w, h) {
+    var pts = s.trend; if (!pts || pts.length < 4 || kind(s) !== "live") return "";
+    var max = 4; pts.forEach(function (v) { if (v != null && v > max) max = v; });
+    var n = pts.length, step = (w - 4) / (n - 1), line = "", area = "", started = false, last = null, col = COLORS[s.status] || COLORS.off;
+    pts.forEach(function (v, i) {
+      if (v == null) { started = false; return; }
+      var x = 2 + i * step, y = h - 2 - (v / max) * (h - 5);
+      line += (started ? " L" : " M") + x.toFixed(1) + " " + y.toFixed(1); started = true; last = [x, y];
+    });
+    if (!last) return "";
+    var first = pts.findIndex ? pts.findIndex(function (v) { return v != null; }) : 0;
+    area = line.replace(/^ M/, "M") + " L" + last[0].toFixed(1) + " " + (h - 1) + " L" + (2 + first * step).toFixed(1) + " " + (h - 1) + " Z";
+    var id = "jqg" + s.id.replace(/[^a-z]/g, "") + w;
+    return '<svg class="jq-spark" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="' + esc(T().trendLabel) + '"><title>' + esc(T().trendLabel) + "</title>" +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".28"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#' + id + ')"/><path d="' + line.replace(/^ M/, "M") + '" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.2" fill="' + col + '"/></svg>';
+  }
+  function quietLine(s) { var q = s.quiet_hours; if (!q) return ""; return '<span class="jq-quiet-hint">' + esc(T().quietHint(q.from, q.to)) + "</span>"; }
+  function stillToday(s, big) {
+    if (!s.closing_soon || kind(s) !== "live") return "";
+    return big ? '<div class="jq-still"><strong>' + T().stillToday + "</strong>" + esc(T().stillTodaySub(clock(Date.now() + s.closes_in_min * 60000))) + "</div>" : '<span class="jq-badge jq-badge--still">' + T().stillToday + "</span>";
+  }
+  // ---- "notify me when the wait is under N min" (demo: browser notification + in-page toast) ----
+  function notifyThr() { var n = Number(store.get("jqNotifyThr")); return [10, 15, 20, 30].indexOf(n) >= 0 ? n : 15; }
+  function notifyWatch() { try { return JSON.parse(store.get("jqNotify") || "null"); } catch (e) { return null; } }
+  function notifyHtml(s) {
+    if (kind(s) === "closed") return "";
+    var t = T(), w = notifyWatch(), thr = notifyThr();
+    if (w && w.site === s.id) return '<div class="jq-notify jq-notify--on"><span>' + esc(t.notifyOn(w.thr)) + '</span><button type="button" class="jq-btn jq-btn--sm" data-notify-cancel="1">' + t.notifyCancel + "</button></div>";
+    return '<div class="jq-notify"><button type="button" class="jq-btn jq-btn--sm jq-notify-btn" data-notify="' + esc(s.id) + '"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3a1.5 1.5 0 0 0-3 0v1.16A7 7 0 0 0 5 11v5l-2 2v1h18v-1Z"/></svg> ' + esc(t.notifyBtn(thr)) + "</button>" +
+      '<label class="jq-notify-thr"><span>' + t.notifyLimit + '</span><select data-notify-thr="1">' + [10, 15, 20, 30].map(function (n) { return '<option value="' + n + '"' + (n === thr ? " selected" : "") + ">" + n + " min</option>"; }).join("") + "</select></label></div>";
+  }
+  function jqToast(msg) {
+    var el = document.getElementById("jq-toast");
+    if (!el) { el = document.createElement("div"); el.id = "jq-toast"; el.className = "jq-toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+    el.textContent = msg; el.classList.add("on"); clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove("on"); }, 5000);
+  }
+  function checkNotify(data) {
+    var w = notifyWatch(); if (!w || !data) return;
+    var s = data.sites.filter(function (x) { return x.id === w.site; })[0];
+    if (!s || kind(s) !== "live" || s.wait_high_min == null || s.wait_high_min > w.thr) return;
+    store.set("jqNotify", ""); var msg = T().notifyHit(s.name, waitText(s));
+    jqToast(msg);
+    try { if (window.Notification && Notification.permission === "granted") new Notification(T().titleNow, { body: msg }); } catch (e) {}
+    renderAll();
+  }
+  function startNotify(id, data) {
+    var t = T(), thr = notifyThr(), s = data && data.sites.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    if (kind(s) === "live" && s.wait_high_min != null && s.wait_high_min <= thr) { jqToast(t.notifyAlready(thr)); return; }
+    store.set("jqNotify", JSON.stringify({ site: id, thr: thr, at: Date.now() })); jqToast(t.notifySet(s.name, thr)); renderAll();
+    try { if (window.Notification && Notification.permission === "default") Notification.requestPermission(); } catch (e) {}
+  }
 
   // ---- blocks ----
   function header(data, ok) {
@@ -797,46 +1055,48 @@ html { scroll-behavior: smooth; }
   }
   function liftBoxes(s) {
     var t = T();
-    return s.lift_states.map(function (st) { return '<span class="jq-lift jq-lift--' + st + '" title="' + (st === "busy" ? t.busy : st === "free" ? t.free : t.closedLift) + '"></span>'; }).join("");
+    return s.lift_states.map(function (st) { if (st === "slow") st = "busy"; return '<span class="jq-lift jq-lift--' + st + '" title="' + (st === "busy" ? t.busy : st === "free" ? t.free : t.closedLift) + '"></span>'; }).join("");
   }
   function rowHtml(s, quiet) {
     var t = T(), k = kind(s), d = dist(s);
     var note = k === "live" && s.quality === "ageing" ? '<span class="jq-row-note">' + updated(s.age_sec) + "</span>" : "";
     var metrics;
-    if (k === "closed") metrics = '<span style="grid-column:1/-1"><span class="jq-metric-label">' + t.closed + '</span><span class="jq-metric-value jq-metric-value--muted">' + esc(cap(closedText(s).replace(/^[^·]*·\s*/, ""))) + "</span></span>";
+    if (k === "closed") metrics = '<span style="grid-column:1/-1"><span class="jq-metric-label">' + (s.closed_reason === "break" ? t.breakLbl : t.closed) + '</span><span class="jq-metric-value jq-metric-value--muted">' + esc(cap(closedText(s).replace(/^[^·]*·\s*/, ""))) + "</span></span>";
     else if (k === "nodata") metrics = '<span style="grid-column:1/-1"><span class="jq-metric-label">' + t.queueInfo + '</span><span class="jq-metric-value jq-metric-value--muted">' + t.noDataRow + "</span></span>";
     else metrics = '<span><span class="jq-metric-label">' + t.carsAhead + '</span><span class="jq-metric-value">' + s.queue_length + " <small>" + cars(s.queue_length) + "</small></span></span>" +
-      '<span><span class="jq-metric-label">' + t.estimatedWait + '</span><span class="jq-metric-value">' + esc(waitText(s)) + "</span></span>" +
+      '<span><span class="jq-metric-label">' + t.estimatedWait + '</span><span class="jq-metric-value">' + esc(waitText(s)) + "</span>" + spark(s, 64, 16) + "</span>" +
       '<span><span class="jq-metric-label">' + t.liftsLabel + '</span><span class="jq-metric-value">' + s.active_lifts + " <small>/ " + s.max_lifts + "</small></span></span>";
     return '<li><button type="button" class="jq-row' + (quiet ? " jq-row--quiet" : "") + (k !== "live" ? " jq-row--off" : "") + '" data-site="' + esc(s.id) + '" aria-label="' + esc(s.name) + ", " + t.show + '">' +
       '<span class="jq-status jq-status--' + statusOf(s) + '" aria-hidden="true"></span>' +
       '<span class="jq-site"><span class="jq-site-name">' + esc(s.name) + "</span>" + (quiet ? '<span class="jq-badge">' + t.quietest + "</span>" : "") +
-      (d != null ? '<span class="jq-dist">' + t.km(d) + "</span>" : "") +
-      '<span class="jq-site-city">' + esc(s.city) + " · " + esc(s.address.split(",")[0]) + "</span>" + note + "</span>" +
+      (d != null ? '<span class="jq-dist">' + t.km(d) + "</span>" : "") + stillToday(s, false) +
+      '<span class="jq-site-city">' + esc(s.city) + " · " + esc(s.address.split(",")[0]) + "</span>" + (k === "live" ? quietLine(s) : "") + note + "</span>" +
       '<span class="jq-metrics">' + metrics + '</span><span class="jq-chev" aria-hidden="true">›</span></button></li>';
   }
   function stateBody(s, full) {
     var t = T(), k = kind(s);
-    if (k === "closed") return '<div class="jq-closed"><span class="jq-closed-big">' + t.closed + "</span>" + esc(closedText(s).replace(/^[^·]*·\s*/, "")) + "</div>";
-    if (k === "nodata") return '<div class="jq-alert"><strong>' + t.noData + "</strong>" + t.noDataLong(Math.max(1, Math.floor(s.age_sec / 60))) + "</div>";
+    if (k === "closed") return '<div class="jq-closed"><span class="jq-closed-big">' + (s.closed_reason === "break" ? t.breakLbl : t.closed) + "</span>" + esc(closedText(s).replace(/^[^·]*·\s*/, "")) + "</div>";
+    if (k === "nodata") return '<div class="jq-alert"><strong>' + t.noData + "</strong>" + t.noDataLong() + "</div>";
     var free = s.wait_high_min === 0;
     var waitNum = free ? t.now : s.wait_low_min === 0 ? "<10" : s.wait_low_min >= 90 ? ">90" : s.wait_low_min + "–" + s.wait_high_min;
     var html = '<div class="jq-stats' + (full ? "" : " jq-stats--two") + '">' +
       '<div class="jq-stat jq-stat--lead"><div class="jq-stat-num">' + s.queue_length + '</div><div class="jq-stat-label">' + t.carsAhead + "</div></div>" +
-      '<div class="jq-stat jq-stat--lead"><div class="jq-stat-num jq-stat-num--sm">' + esc(waitNum) + '</div><div class="jq-stat-label">' + (free ? t.noWait : t.waitMin) + "</div></div>" +
+      '<div class="jq-stat jq-stat--lead"><div class="jq-stat-num jq-stat-num--sm">' + esc(waitNum) + '</div><div class="jq-stat-label">' + (free ? t.noWait : t.waitMin) + "</div>" + spark(s, 96, 22) + "</div>" +
       '<div class="jq-stat"><div class="jq-stat-num jq-stat-num--sm">' + s.active_lifts + '<small class="jq-of"> / ' + s.max_lifts + '</small></div><div class="jq-stat-label">' + t.liftsInUse + '</div><div class="jq-lifts" aria-hidden="true">' + liftBoxes(s) + "</div></div>";
     if (full) html += '<div class="jq-stat"><div class="jq-stat-num jq-stat-num--sm">' + s.in_service + '</div><div class="jq-stat-label">' + t.inService + "</div></div>" +
       '<div class="jq-stat"><div class="jq-stat-num jq-stat-num--sm">' + s.served_today + '</div><div class="jq-stat-label">' + t.servedToday + "</div></div>" +
       '<div class="jq-stat"><div class="jq-stat-num jq-stat-num--sm">~' + Math.round(s.service_min) + '</div><div class="jq-stat-label">' + t.avgChange + "</div></div>";
     html += "</div>";
     if (full) html += '<div class="jq-legend"><span><i class="jq-lift jq-lift--busy"></i>' + t.busy + '</span><span><i class="jq-lift jq-lift--free"></i>' + t.free + '</span><span><i class="jq-lift jq-lift--closed"></i>' + t.closedLift + "</span></div>";
+    html = stillToday(s, true) + html;
+    if (s.quiet_hours) html += '<p class="jq-quiet-line">' + esc(t.quietHint(s.quiet_hours.from, s.quiet_hours.to)) + "</p>";
     if (s.quality === "ageing") html += '<div class="jq-alert" style="border-left-color:var(--dir-yellow)"><strong>' + t.oldData + "</strong>" + updated(s.age_sec) + ".</div>";
     else html += '<p class="jq-small">' + updated(s.age_sec) + "</p>";
     return html;
   }
   function pillHtml(s) {
     var t = T(), k = kind(s);
-    var label = k === "closed" ? t.closed : k === "nodata" ? t.pill.off : s.wait_high_min === 0 ? t.queueFreeShort : t.pill[s.status];
+    var label = k === "closed" ? (s.closed_reason === "break" ? t.breakLbl : t.closed) : k === "nodata" ? t.pill.off : s.wait_high_min === 0 ? t.queueFreeShort : t.pill[s.status];
     return '<span class="jq-pill jq-pill--' + statusOf(s) + '">' + esc(label) + "</span>";
   }
   function placeHtml(s, sub) {
@@ -847,7 +1107,7 @@ html { scroll-behavior: smooth; }
     var t = T(), d = dist(s);
     return '<div class="jq-primary"><div class="jq-single-body">' + placeHtml(s, t.nearestStation + (d != null ? " · " + t.km(d) : "")) + stateBody(s, false) + "</div>" +
       '<div class="jq-actions"><a class="jq-btn jq-btn--solid" href="' + mapsUrl(s.address) + '" target="_blank" rel="noopener">' + t.driveThere + ' <span aria-hidden="true">→</span></a>' +
-      '<button type="button" class="jq-btn" data-site="' + esc(s.id) + '">' + t.details + "</button></div></div>";
+      '<button type="button" class="jq-btn" data-site="' + esc(s.id) + '">' + t.details + "</button></div>" + notifyHtml(s) + "</div>";
   }
   function footer() {
     var t = T();
@@ -875,7 +1135,7 @@ html { scroll-behavior: smooth; }
     if (!s) return header(data, false) + back + '<div class="jq-single-body"><div class="jq-alert"><strong>' + t.noData + "</strong>" + t.apiDownLong + "</div></div>";
     var d = dist(s);
     return header(data, ok) + back + '<div class="jq-single-body">' + placeHtml(s, d != null ? t.yourStation + " · " + t.km(d) : null) + stateBody(s, true) + "</div>" +
-      '<div class="jq-actions"><a class="jq-btn jq-btn--solid" href="' + mapsUrl(s.address) + '" target="_blank" rel="noopener">' + t.driveThere + ' <span aria-hidden="true">→</span></a></div>' +
+      '<div class="jq-actions"><a class="jq-btn jq-btn--solid" href="' + mapsUrl(s.address) + '" target="_blank" rel="noopener">' + t.driveThere + ' <span aria-hidden="true">→</span></a></div>' + notifyHtml(s) +
       '<p class="jq-note">' + t.disclaimer + "</p>";
   }
 
@@ -886,10 +1146,14 @@ html { scroll-behavior: smooth; }
     el.classList.add("jq"); el.setAttribute("aria-live", "polite");
     el.addEventListener("click", function (ev) {
       var l = ev.target.closest("[data-lang]"); if (l) { setLang(l.getAttribute("data-lang")); return; }
+      if (ev.target.closest("[data-notify-thr]")) return;
+      var nb = ev.target.closest("[data-notify]"); if (nb) { startNotify(nb.getAttribute("data-notify"), self.data); return; }
+      if (ev.target.closest("[data-notify-cancel]")) { store.set("jqNotify", ""); renderAll(); return; }
       var g = ev.target.closest("[data-loc]"); if (g) { decideLoc(g.getAttribute("data-loc") === "1"); return; }
       var b = ev.target.closest("[data-back]"); if (b) { self.selected = null; self.render(); self.el.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
       var r = ev.target.closest("[data-site]"); if (r && self.mode === "all") { self.selected = r.getAttribute("data-site"); self.render(); self.el.scrollIntoView({ block: "start", behavior: "smooth" }); }
     });
+    el.addEventListener("change", function (ev) { var sel = ev.target.closest("[data-notify-thr]"); if (sel) { store.set("jqNotifyThr", sel.value); renderAll(); } });
     document.addEventListener("visibilitychange", function () { if (!document.hidden) self.poll(); });
     widgets.push(this);
     this.poll();
@@ -897,7 +1161,7 @@ html { scroll-behavior: smooth; }
   Widget.prototype.poll = function () {
     var self = this; clearTimeout(this.timer);
     fetch(this.api + "/v1/sites", { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) { self.data = d; self.ok = true; }, function () { self.ok = false; })
+      .then(function (d) { self.data = d; self.ok = true; checkNotify(d); }, function () { self.ok = false; })
       .then(function () { self.render(); self.timer = setTimeout(function () { if (!document.hidden) self.poll(); }, POLL_MS); });
   };
   Widget.prototype.render = function () {
@@ -911,6 +1175,99 @@ html { scroll-behavior: smooth; }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>
+<script>/* Shared helpers for the staff and admin panels (demo). */
+window.PN = (function () {
+  "use strict";
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function clock(t, lang) { var x = new Intl.DateTimeFormat("fi-FI", { timeZone: "Europe/Helsinki", hour: "2-digit", minute: "2-digit" }).format(new Date(t)); return lang === "en" ? x.replace(".", ":") : x; }
+  function lifts(n, lang) { return lang === "en" ? n + (n === 1 ? " lift" : " lifts") : n + (n === 1 ? " nostin" : " nostinta"); }
+  /** Where today's lift count comes from: learning window, camera decision or manual override (by whom). */
+  function modeInfo(s, lang) {
+    var en = lang === "en";
+    if (s.lifts_mode === "learning") {
+      var span = s.learning_ends_at - s.learning_started_at, pct = span > 0 ? Math.min(100, Math.max(0, 100 - (s.learning_ends_at - Date.now()) / span * 100)) : 0;
+      return { cls: "learning", tag: en ? "Learning" : "Opettelu",
+        text: en ? "Learning the lifts · " + s.learning_remaining_min + " min left" : "Opetellaan nostimia · " + s.learning_remaining_min + " min jäljellä",
+        sub: en ? "The camera is watching which lifts get cars. Until then the website uses the default: " + lifts(s.default_lifts, lang) + "."
+                : "Kamera seuraa, mille nostimille autoja tulee. Siihen asti verkkosivu käyttää oletusta: " + lifts(s.default_lifts, lang) + ".",
+        pct: s.learning_pct };
+    }
+    if (s.lifts_mode === "override") return { cls: "override", tag: en ? "Manual" : "Käsin",
+      text: en ? "Set manually: " + lifts(s.override_lifts || s.active_lifts, lang) : "Käsin asetettu: " + lifts(s.override_lifts || s.active_lifts, lang),
+      sub: (en ? "By " : "") + s.override_by + (en ? " at " : " klo ") + clock(s.override_set_at, lang) + (en ? " · valid until closing" : " · voimassa päivän loppuun") };
+    var d = s.camera_decision, text;
+    if (!d) text = (en ? "Camera: " : "Kamera: ") + lifts(s.auto_lifts || 1, lang);
+    else if (d.kind === "no_cars") text = en ? "No cars during learning – default " + lifts(d.lifts, lang) : "Ei autoja opettelun aikana – oletus " + lifts(d.lifts, lang);
+    else if (d.kind === "updated") text = (en ? "Camera updated: " : "Kamera päivitti: ") + lifts(d.lifts, lang) + (en ? " at " : " klo ") + clock(d.at, lang);
+    else text = (en ? "Camera decided: " : "Kamera päätti: ") + lifts(d.lifts, lang) + (en ? " at " : " klo ") + clock(d.at, lang);
+    return { cls: "camera", tag: en ? "Camera" : "Kamera", text: text,
+      sub: en ? "Changes only if a lift clearly changes for a long time (empty 10 min while cars wait, or busy again for 5 min)."
+              : "Muuttuu vain, jos nostimen tila muuttuu selvästi pitkäksi aikaa (tyhjänä 10 min autojen odottaessa, tai taas käytössä 5 min)." };
+  }
+  function modeHtml(s, lang) {
+    var m = modeInfo(s, lang);
+    return '<div class="pn-mode pn-mode--' + m.cls + '">' + esc(m.text) + "<small>" + esc(m.sub) + "</small>" +
+      (m.cls === "learning" ? '<div class="pn-bar"><i style="width:' + Math.round(m.pct || 0) + '%"></i></div>' : "") + "</div>";
+  }
+  function liftBoxes(s, lang) {
+    var en = lang === "en";
+    return '<div class="pn-lifts">' + s.lift_states.map(function (st, i) {
+      var cls = st === "slow" ? "busy" : st;
+      if ((s.down_flags || []).some(function (f) { return f.lift === i; })) cls = "flag";
+      var label = (en ? "Lift " : "Nostin ") + (i + 1) + ": " + (st === "slow" ? (en ? "slow" : "hidas") : st === "busy" ? (en ? "car on lift" : "auto vaihdossa") : st === "lunch" ? (en ? "lunch break" : "lounastauolla") : st === "free" ? (en ? "free" : "vapaa") : (en ? "not in use" : "ei käytössä"));
+      return '<span class="pn-lift pn-lift--' + cls + '" title="' + esc(label) + '"' + (st === "slow" ? ' style="background:var(--red);border-color:var(--red)"' : "") + "></span>";
+    }).join("") + "</div>";
+  }
+  function slowNote(s, lang) {
+    var en = lang === "en", out = [];
+    s.lift_states.forEach(function (st, i) { if (st === "slow") out.push((en ? "Lift " : "Nostin ") + (i + 1) + ": " + s.lift_minutes[i] + " min – " + (en ? "slow" : "hidas")); });
+    if (!out.length) return "";
+    return '<div class="pn-mode" style="border-left-color:var(--red)">' + esc(out.join(" · ")) + "<small>" +
+      (en ? "Over " + s.slow_min + " min on the lift. Not counted in the average; the wait estimate treats this lift as unavailable until it frees up."
+          : "Yli " + s.slow_min + " min nostimella. Ei lasketa keskiarvoon, ja odotusarvio laskee nostimen pois käytöstä, kunnes se vapautuu.") + "</small></div>";
+  }
+  function lunchNote(s, lang) {
+    var en = lang === "en"; if (!s.lunch || !s.lunch.length) return "";
+    return '<div class="pn-mode pn-mode--lunch">' + esc(s.lunch.map(function (l) { return (en ? "Lift " : "Nostin ") + (l.lift + 1) + (en ? ": lunch break · " + l.remaining_min + " min left" : ": lounastauko · " + l.remaining_min + " min jäljellä"); }).join(" · ")) +
+      "<small>" + (en ? "Out of the estimate for now; it returns to the count by itself." : "Pois arviosta tauon ajan; palaa laskentaan itsestään.") + "</small></div>";
+  }
+  function L(lang, fi, en) { return lang === "en" ? en : fi; }
+  function api(path, opts, token) {
+    opts = opts || {}; var h = { "Content-Type": "application/json" }; if (token) h.Authorization = "Bearer " + token;
+    return fetch(path, { method: opts.method || (opts.body ? "POST" : "GET"), headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: "no-store" })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) { var e = new Error(j.error || r.status); e.status = r.status; throw e; } return j; }); });
+  }
+  function ensureUi() {
+    if (document.getElementById("pn-modal")) return;
+    var m = document.createElement("div"); m.id = "pn-modal"; m.className = "pn-page pn-modal"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true");
+    m.innerHTML = '<div class="pn-modal-box"><p class="pn-modal-q" id="pn-modal-q"></p><p class="pn-small" id="pn-modal-sub"></p><div class="pn-modal-btns"><button type="button" id="pn-no"></button><button type="button" class="pn-yes" id="pn-yes"></button></div></div>';
+    document.body.appendChild(m);
+    var t = document.createElement("div"); t.id = "pn-toast"; t.className = "pn-toast"; document.body.appendChild(t);
+  }
+  function confirmBox(q, sub, yes, no) {
+    ensureUi();
+    return new Promise(function (res) {
+      var m = document.getElementById("pn-modal");
+      document.getElementById("pn-modal-q").textContent = q; document.getElementById("pn-modal-sub").textContent = sub || "";
+      document.getElementById("pn-yes").textContent = yes; document.getElementById("pn-no").textContent = no;
+      m.classList.add("on");
+      function done(v) { m.classList.remove("on"); document.getElementById("pn-yes").onclick = document.getElementById("pn-no").onclick = null; res(v); }
+      document.getElementById("pn-yes").onclick = function () { done(true); }; document.getElementById("pn-no").onclick = function () { done(false); };
+    });
+  }
+  function toast(msg, bad) { ensureUi(); var el = document.getElementById("pn-toast"); el.textContent = msg; el.style.borderLeftColor = bad ? "var(--red)" : "var(--green)"; el.style.display = "block"; clearTimeout(el._t); el._t = setTimeout(function () { el.style.display = "none"; }, 2800); }
+  function keypad(el, input, onOk) {
+    el.innerHTML = "";
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "OK"].forEach(function (k) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = k;
+      b.onclick = function () { if (k === "⌫") input.value = input.value.slice(0, -1); else if (k === "OK") onOk(); else if (input.value.length < 6) input.value += k; };
+      el.appendChild(b);
+    });
+    input.onkeydown = function (e) { if (e.key === "Enter") onOk(); };
+  }
+  return { esc: esc, clock: clock, lifts: lifts, modeInfo: modeInfo, modeHtml: modeHtml, liftBoxes: liftBoxes, slowNote: slowNote, lunchNote: lunchNote, L: L, api: api, confirm: confirmBox, toast: toast, keypad: keypad };
+})();
+</script>
 <script>
   (function () {
     var $ = function (id) { return document.getElementById(id); };
@@ -922,7 +1279,7 @@ html { scroll-behavior: smooth; }
       return fetch("/v1/demo/state", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
         Array.prototype.forEach.call($("speed").children, function (b) { b.className = Number(b.dataset.s) === d.speed ? "on" : ""; });
         $("sites").innerHTML = d.sites.map(function (s) { siteNames[s.id] = s.name;
-          return '<div class="srow"><div><div class="nm">' + s.name + '</div><div class="tr">Simulaattorissa: ' + s.lane + " jonossa · " + s.working_lifts + " nostinta oikeasti töissä" + (s.offline && !s.offline_manual ? " · satunnainen katko" : "") + '</div></div><button data-id="' + s.id + '" data-off="' + (s.offline ? 1 : 0) + '" class="' + (s.offline ? "off" : "") + '">' + (s.offline ? "Palauta kamera" : "Katkaise kamera") + "</button></div>"; }).join("");
+          return '<div class="srow"><div><div class="nm">' + s.name + '</div><div class="tr">Simulaattorissa: ' + s.lane + " jonossa · " + s.working_lifts + " nostinta oikeasti töissä" + '</div></div><span class="tr" style="white-space:nowrap">' + (s.offline ? (s.offline_manual ? "Kamera pois (ylläpito)" : "Yhteyskatkos") : s.tamper ? (s.tamper === "snow" ? "Lunta linssissä" : "Linssi peitetty") : "Kamera OK") + "</span></div>"; }).join("");
         Array.prototype.forEach.call($("hours").children, function (b) { b.className = (b.dataset.h === "1") === !!d.real_hours ? "on" : ""; });
         $("outages").className = d.random_outages ? "on" : ""; $("outtxt").textContent = d.random_outages ? "päällä (n. 1 / 15 min, 3–6 min kerrallaan)" : "pois";
         $("log").innerHTML = d.recent_events.length ? d.recent_events.map(function (e) {
@@ -931,62 +1288,476 @@ html { scroll-behavior: smooth; }
       });
     }
     $("speed").onclick = function (e) { var b = e.target.closest("button"); if (b) post("/v1/demo/speed", { speed: Number(b.dataset.s) }); };
-    $("sites").onclick = function (e) { var b = e.target.closest("button"); if (b) post("/v1/demo/sites/" + b.dataset.id + "/offline", { offline: b.dataset.off !== "1" }); };
     $("hours").onclick = function (e) { var b = e.target.closest("button"); if (b) post("/v1/demo/hours", { real: b.dataset.h === "1" }); };
     $("outages").onclick = function () { post("/v1/demo/outages", { enabled: this.className !== "on" }); };
     load(); setInterval(load, 5000);
   })();
   </script><script>
   (function () {
-    var token = sessionStorage.getItem("jqToken"); var data = null; var timer;
     var $ = function (id) { return document.getElementById(id); };
-    var keys = $("keys"); ["1","2","3","4","5","6","7","8","9","⌫","0","OK"].forEach(function (k) {
-      var b = document.createElement("button"); b.type = "button"; b.textContent = k;
-      b.onclick = function () { var i = $("pin"); if (k === "⌫") i.value = i.value.slice(0, -1); else if (k === "OK") login(); else if (i.value.length < 8) i.value += k; };
-      keys.appendChild(b);
-    });
-    $("go").onclick = login; $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") login(); });
-    $("logout").onclick = function () { sessionStorage.removeItem("jqToken"); token = null; show(); };
-    function toast(t) { var el = $("toast"); el.textContent = t; el.style.display = "block"; clearTimeout(el._t); el._t = setTimeout(function () { el.style.display = "none"; }, 2600); }
-    function login() {
-      fetch("/v1/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin: $("pin").value }) })
-        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || "Virhe"); return j; }); })
-        .then(function (j) { token = j.token; sessionStorage.setItem("jqToken", token); $("pin").value = ""; $("err").textContent = ""; show(); })
-        .catch(function (e) { $("err").textContent = e.message === "Väärä PIN" ? "Väärä PIN-koodi. Yritä uudelleen." : "Kirjautuminen ei onnistunut."; $("pin").value = ""; });
+    var NAMES = { olari: ["Olari", "Olariin", "Olarin", 4], puotila: ["Puotila", "Puotilaan", "Puotilan", 2], kannelmaki: ["Kannelmäki", "Kannelmäkeen", "Kannelmäen", 2], "ala-tikkurila": ["Ala-Tikkurila", "Ala-Tikkurilaan", "Ala-Tikkurilan", 2], jarvenpaa: ["Järvenpää", "Järvenpäähän", "Järvenpään", 2] };
+    var S = {
+      fi: { kicker: "Henkilöstö · nostimet", lead: "Tällä sivulla voit muuttaa vain tämän aseman nostimia. Kamera laskee käytössä olevat nostimet itse; aseta luku käsin vain, jos se on väärin.",
+        pin: "Tämän aseman PIN-koodi", go: "Kirjaudu", wrong: "Väärä PIN tälle asemalle.", fail: "Kirjautuminen ei onnistunut.", logout: "Kirjaudu ulos", unknown: "Tuntematon asema",
+        inUse: "nostinta laskennassa nyt", setTitle: "Montako nostinta on käytössä?", auto: "Palauta kameran laskentaan", q: function (n, nm) { return "Asetetaanko " + PN.lifts(n, "fi") + " " + nm[1] + "?"; },
+        qsub: "Käsin asetus voittaa kameran luvun tämän päivän loppuun asti.", yes: "Kyllä, aseta", no: "Peruuta", qauto: function (nm) { return "Palautetaanko " + nm[2] + " nostimet kameran laskentaan?"; },
+        yesAuto: "Kyllä, palauta", saved: function (n) { return "Tallennettu: " + PN.lifts(n, "fi"); }, savedAuto: "Palautettu kameran laskentaan", err: "Tallennus epäonnistui",
+        noCam: "Kamera ei vastaa – sivuston arvio on piilotettu. Kameran voi merkitä pois käytöstä tai palauttaa vain ylläpito.", queue: function (q) { return "Jonossa nyt " + q + " · vaihdossa "; }, bar: "Henkilöstösivu · demo",
+        lunchTitle: "Lounastauko", lunchLead: "Nostin pois arviosta 30 min, palaa sitten itsestään. Tauolla olevaa nostinta ei merkitä rikkinäiseksi.",
+        lunchStart: "Aloita 30 min", lunchEnd: "Lopeta tauko", lunchOn: function (m) { return "Lounaalla · " + m + " min jäljellä"; }, lunchFree: "Käytössä",
+        lunchQ: function (i) { return "Aloitetaanko lounastauko nostimelle " + i + "?"; }, lunchQsub: "Nostin lasketaan pois arviosta 30 minuutiksi.", lunchYes: "Kyllä, aloita",
+        lunchEndQ: function (i) { return "Lopetetaanko nostimen " + i + " lounastauko nyt?"; }, lunchEndYes: "Kyllä, lopeta", lunchSaved: function (i) { return "Lounastauko alkoi: nostin " + i; }, lunchEnded: function (i) { return "Nostin " + i + " palasi laskentaan"; }, lift: "Nostin" },
+      en: { kicker: "Staff · lifts", lead: "On this page you can only change this station's lifts. The camera counts the working lifts itself; only set the number by hand if it's wrong.",
+        pin: "This station's PIN", go: "Log in", wrong: "Wrong PIN for this station.", fail: "Login failed.", logout: "Log out", unknown: "Unknown station",
+        inUse: "lifts counted now", setTitle: "How many lifts are working?", auto: "Back to camera count", q: function (n, nm) { return "Set " + PN.lifts(n, "en") + " at " + nm[0] + "?"; },
+        qsub: "A manual setting overrides the camera until closing today.", yes: "Yes, set", no: "Cancel", qauto: function (nm) { return "Return " + nm[0] + " to the camera count?"; },
+        yesAuto: "Yes, return", saved: function (n) { return "Saved: " + PN.lifts(n, "en"); }, savedAuto: "Back to camera count", err: "Saving failed",
+        noCam: "Camera not responding – the website hides the estimate. Only an admin can mark the camera down or restore it.", queue: function (q) { return "In line now " + q + " · on lifts "; }, bar: "Staff page · demo",
+        lunchTitle: "Lunch break", lunchLead: "Takes the lift out of the estimate for 30 min, then it returns by itself. A lift on a break is never flagged as broken.",
+        lunchStart: "Start 30 min", lunchEnd: "End break", lunchOn: function (m) { return "On lunch · " + m + " min left"; }, lunchFree: "Working",
+        lunchQ: function (i) { return "Start a lunch break for lift " + i + "?"; }, lunchQsub: "The lift is left out of the estimate for 30 minutes.", lunchYes: "Yes, start",
+        lunchEndQ: function (i) { return "End lift " + i + "'s lunch break now?"; }, lunchEndYes: "Yes, end", lunchSaved: function (i) { return "Lunch break started: lift " + i; }, lunchEnded: function (i) { return "Lift " + i + " is back in the count"; }, lift: "Lift" }
+    };
+    var lang = localStorage.getItem("staffLang") === "en" ? "en" : "fi", site = null, token = null, timer = null, data = null;
+    function siteFromUrl() { var m = location.hash.match(/^#\/staff\/([a-z-]+)/) || location.pathname.match(/\/staff\/([a-z-]+)/); return m ? m[1] : null; }
+    function t() { return S[lang]; }
+    function texts() {
+      var nm = NAMES[site];
+      $("st-name").textContent = nm ? nm[0] : t().unknown; $("st-kicker").textContent = t().kicker; $("st-lead").textContent = t().lead;
+      $("st-pinlabel").textContent = t().pin; $("st-go").textContent = t().go; $("st-logout").textContent = t().logout; $("st-lang").textContent = lang === "fi" ? "EN" : "FI";
+      $("st-demobar").textContent = t().bar; document.title = (nm ? nm[0] + " — " : "") + (lang === "fi" ? "Henkilöstö" : "Staff");
     }
-    function show() { $("login").hidden = !!token; $("app").hidden = !token; if (token) load(); else clearTimeout(timer); }
+    function init() {
+      var s = siteFromUrl(); if (!s) return;
+      if (s !== site) { clearTimeout(timer); site = s; token = sessionStorage.getItem("jqStaff:" + site); data = null; $("st-err").textContent = ""; $("st-pin").value = ""; }
+      texts(); show();
+    }
+    function show() { $("st-login").hidden = !!token || !NAMES[site]; $("st-app").hidden = !token; if (token) load(); }
+    function login() {
+      PN.api("/v1/staff/" + site + "/login", { body: { pin: $("st-pin").value } })
+        .then(function (j) { token = j.token; sessionStorage.setItem("jqStaff:" + site, token); $("st-pin").value = ""; $("st-err").textContent = ""; show(); })
+        .catch(function (e) { $("st-err").textContent = e.status === 401 ? t().wrong : t().fail; $("st-pin").value = ""; });
+    }
+    function load() {
+      clearTimeout(timer); var mySite = site;
+      PN.api("/v1/staff/" + site + "/status", {}, token).then(function (d) { if (mySite !== site) return; data = d; render(); timer = setTimeout(load, d.lifts_mode === "learning" ? 4000 : 8000); })
+        .catch(function (e) { if (e.status === 403 || e.status === 401) { sessionStorage.removeItem("jqStaff:" + site); token = null; show(); } else timer = setTimeout(load, 10000); });
+    }
+    function render() {
+      var s = data, nm = NAMES[site], btns = "";
+      for (var n = 1; n <= s.max_lifts; n++) btns += '<button type="button" data-n="' + n + '" class="' + (s.lifts_mode === "override" && s.override_lifts === n ? "sel" : "") + '">' + n + "</button>";
+      $("st-site").innerHTML = '<div class="pn-card"><div class="pn-now"><b>' + (s.active_lifts == null ? s.default_lifts : s.active_lifts) + "<small style=\"font-size:26px;color:var(--muted)\"> / " + s.max_lifts + "</small></b><span>" + t().inUse + "</span></div>" +
+        PN.liftBoxes(s, lang) + PN.modeHtml(s, lang) + PN.lunchNote(s, lang) + PN.slowNote(s, lang) +
+        (s.quality === "hidden" ? '<div class="pn-mode pn-mode--off">' + t().noCam + "</div>" : '<p class="pn-small">' + t().queue(s.queue_length) + s.in_service + "</p>") + "</div>" +
+        '<div class="pn-card"><p class="pn-label" style="margin-top:0!important">' + t().setTitle + '</p><div class="pn-choices" style="grid-template-columns:repeat(' + s.max_lifts + ',1fr)">' + btns + "</div>" +
+        '<button type="button" class="pn-ghost" data-auto="1"' + (s.lifts_mode !== "override" ? " disabled" : "") + ">" + t().auto + "</button></div>" + lunchCard(s);
+    }
+    function lunchCard(s) {
+      var rows = "", onL = {}; (s.lunch || []).forEach(function (l) { onL[l.lift] = l; });
+      for (var i = 0; i < s.max_lifts; i++) {
+        var l = onL[i];
+        rows += '<div class="pn-lunch-row"><span><b>' + t().lift + " " + (i + 1) + "</b><small>" + (l ? t().lunchOn(l.remaining_min) : t().lunchFree) + "</small></span>" +
+          '<button type="button" data-lunch="' + i + '" data-on="' + (l ? 1 : 0) + '" class="pn-ghost' + (l ? " pn-ghost--on" : "") + '">' + (l ? t().lunchEnd : t().lunchStart) + "</button></div>";
+      }
+      return '<div class="pn-card" id="st-lunch"><p class="pn-label" style="margin-top:0!important">' + t().lunchTitle + '</p><p class="pn-small" style="margin:0 0 6px">' + t().lunchLead + "</p>" + rows + "</div>";
+    }
+    $("st-site").addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b || !data) return; var nm = NAMES[site];
+      if (b.dataset.lunch != null) {
+        var i = Number(b.dataset.lunch), end = b.dataset.on === "1";
+        PN.confirm(end ? t().lunchEndQ(i + 1) : t().lunchQ(i + 1), end ? "" : t().lunchQsub, end ? t().lunchEndYes : t().lunchYes, t().no).then(function (ok) {
+          if (ok) PN.api("/v1/staff/" + site + "/lunch", { body: { lift: i, action: end ? "end" : "start" } }, token).then(function () { PN.toast(end ? t().lunchEnded(i + 1) : t().lunchSaved(i + 1)); load(); }, function (e) { PN.toast(e.message || t().err, true); });
+        });
+      } else if (b.dataset.auto) PN.confirm(t().qauto(nm), "", t().yesAuto, t().no).then(function (ok) { if (ok) save(null); });
+      else if (b.dataset.n) { var n = Number(b.dataset.n); PN.confirm(t().q(n, nm), t().qsub, t().yes, t().no).then(function (ok) { if (ok) save(n); }); }
+    });
+    function save(n) { PN.api("/v1/staff/" + site + "/override", { body: { lifts: n } }, token).then(function () { PN.toast(n == null ? t().savedAuto : t().saved(n)); load(); }, function () { PN.toast(t().err, true); }); }
+    $("st-lang").onclick = function () { lang = lang === "fi" ? "en" : "fi"; localStorage.setItem("staffLang", lang); texts(); if (data) render(); };
+    $("st-go").onclick = login; PN.keypad($("st-keys"), $("st-pin"), login);
+    $("st-logout").onclick = function () { sessionStorage.removeItem("jqStaff:" + site); token = null; clearTimeout(timer); show(); };
+    window.addEventListener("hashchange", init); window.JQStaffInit = init; init();
+  })();
+  </script><script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); }, E = PN.esc;
+    var token = sessionStorage.getItem("jqAdmin"), data = null, hist = null, histAt = 0, timer = null, tab = "overview", sub = "day", heatSite = "olari", built = {};
+    var lang = localStorage.getItem("adminLang") === "en" ? "en" : "fi";
+    function L(fi, en) { return lang === "en" ? en : fi; }
+    var IN = { olari: "Olariin", puotila: "Puotilaan", kannelmaki: "Kannelmäkeen", "ala-tikkurila": "Ala-Tikkurilaan", jarvenpaa: "Järvenpäähän" };
+    var OF = { olari: "Olarin", puotila: "Puotilan", kannelmaki: "Kannelmäen", "ala-tikkurila": "Ala-Tikkurilan", jarvenpaa: "Järvenpään" };
+    var DAYS = [1, 2, 3, 4, 5, 6, 0], WD = { fi: ["su", "ma", "ti", "ke", "to", "pe", "la"], en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] };
+    var TABS = [["overview", "Yleiskatsaus", "Overview"], ["stations", "Asemat", "Stations"], ["cameras", "Kamerat", "Health & alerts"], ["stats", "Tilastot", "Statistics"], ["accuracy", "Tarkkuus", "Daily accuracy"], ["weather", "Sää", "Weather"], ["log", "Loki", "Log"]];
+    function hhmm(m) { return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+    function mins(v) { var p = v.split(":"); return Number(p[0]) * 60 + Number(p[1]); }
+    function num(x, d) { return lang === "en" ? Number(x).toFixed(d) : Number(x).toFixed(d).replace(".", ","); }
+    function clk(t) { return PN.clock(t, lang); }
+    function lifts(n) { return PN.lifts(n, lang); }
+    function siteName(id) { var s = data && data.sites.filter(function (x) { return x.id === id; })[0]; return s ? s.name : id; }
+    function dayLabel(key) { var p = key.split("-"), d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12)); return WD[lang][d.getUTCDay()] + " " + (+p[2]) + "." + (+p[1]) + "."; }
+    function label(t) { return '<p class="pn-label" style="margin-top:0!important">' + t + "</p>"; }
+
+    function texts() {
+      $("ad-kicker").textContent = L("Omistaja ja luotettu henkilöstö", "Owner and trusted staff"); $("ad-h1").textContent = L("Ylläpito", "Admin");
+      $("ad-pinlabel").textContent = L("Ylläpidon PIN-koodi", "Admin PIN"); $("ad-go").textContent = L("Kirjaudu", "Log in"); $("ad-logout").textContent = L("Kirjaudu ulos", "Log out");
+      $("ad-lang").textContent = lang === "fi" ? "EN" : "FI"; $("ad-st-h2").textContent = L("Asemakohtaiset ohjaukset", "Per-station controls");
+      $("ad-alerts-h").textContent = L("Hälytykset tänään", "Alerts today"); $("ad-log-h").textContent = L("Tämän päivän muutokset", "Today's changes");
+      $("ad-demobar").textContent = L("Ylläpito · demo-PIN 9999", "Admin · demo PIN 9999"); document.documentElement.lang = lang; document.title = L("Ylläpito — jonolaskuri (demo)", "Admin — queue counter (demo)");
+      $("ad-tabs").innerHTML = TABS.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + L(t[1], t[2]) + '<span class="pn-dot" data-dot="' + t[0] + '" hidden></span></button>'; }).join("");
+      $("ad-subtabs").innerHTML = [["day", "Päivä", "Day"], ["lost", "Menetetyt asiakkaat", "Lost customers"], ["heat", "Ruuhka-ajat", "Busy hours"]].map(function (x) { return '<button type="button" class="pn-btn" data-sub="' + x[0] + '">' + L(x[1], x[2]) + "</button>"; }).join("");
+      setTab(tab, true); setSub(sub);
+    }
+    function login() {
+      PN.api("/v1/admin/login", { body: { pin: $("ad-pin").value } }).then(function (j) { token = j.token; sessionStorage.setItem("jqAdmin", token); $("ad-pin").value = ""; $("ad-err").textContent = ""; show(); })
+        .catch(function (e) { $("ad-err").textContent = e.status === 401 ? L("Väärä PIN. Ylläpitoon pääsee vain ylläpidon PIN-koodilla.", "Wrong PIN. Only the admin PIN opens the admin panel.") : L("Kirjautuminen ei onnistunut.", "Login failed."); $("ad-pin").value = ""; });
+    }
+    function show() { $("ad-login").hidden = !!token; $("ad-app").hidden = !token; if (token) load(); else clearTimeout(timer); }
     function load() {
       clearTimeout(timer);
-      fetch("/v1/admin/sites", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
-        .then(function (r) { if (r.status === 401) { sessionStorage.removeItem("jqToken"); token = null; show(); throw 0; } return r.json(); })
-        .then(function (d) { data = d; render(); timer = setTimeout(load, 10000); }, function () { timer = setTimeout(load, 15000); });
+      PN.api("/v1/admin/overview", {}, token).then(function (d) { data = d; render(); timer = setTimeout(load, 5000); if ((tab === "stats" || tab === "accuracy") && Date.now() - histAt > 15000) loadHist(); })
+        .catch(function (e) { if (e.status === 401 || e.status === 403) { sessionStorage.removeItem("jqAdmin"); token = null; show(); } else timer = setTimeout(load, 10000); });
     }
-    function set(id, lifts) {
-      fetch("/v1/admin/sites/" + id + "/override", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ lifts: lifts }) })
-        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-        .then(function () { toast(lifts == null ? "Palautettu automaattiseen laskentaan" : "Tallennettu: " + lifts + " nostinta käytössä"); load(); }, function () { toast("Tallennus epäonnistui"); });
+    function loadHist() { histAt = Date.now(); return PN.api("/v1/admin/history", {}, token).then(function (h) { hist = h; renderStats(); renderAcc(); }); }
+    function act(path, body, okMsg) { return PN.api(path, { body: body }, token).then(function () { PN.toast(okMsg); histAt = 0; load(); }, function (e) { PN.toast(e.message || L("Virhe", "Error"), true); }); }
+
+    // ---------- shared bits ----------
+    function stationState(s) {
+      if (s.closed_reason === "break") return [L("Tauko · klo " + s.opens_time + " asti", "Break · until " + String(s.opens_time).replace(".", ":")), "yellow"];
+      if (s.closed_reason === "closed_day") return [L("Suljettu tänään", "Closed today"), "red"];
+      if (s.closed_reason === "hours") return [L("Suljettu (aukioloaika)", "Closed (hours)"), "off"];
+      return [s.closing_soon ? L("Sulkeutuu " + s.closes_in_min + " min", "Closes in " + s.closes_in_min + " min") : L("Auki", "Open"), s.closing_soon ? "yellow" : "green"];
     }
-    function until(t) { return new Intl.DateTimeFormat("fi-FI", { timeZone: "Europe/Helsinki", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(t - 1000)); }
-    function render() {
-      var html = data.sites.map(function (s) {
-        var hidden = s.quality === "hidden";
-        var src = hidden ? '<span class="src src--off">Kamera ei vastaa</span>' : s.lifts_source === "override" ? '<span class="src src--override">Käsin asetettu</span>' : '<span class="src">Automaattinen</span>';
-        var btns = ""; for (var n = 1; n <= s.max_lifts; n++) btns += '<button type="button" data-id="' + s.id + '" data-n="' + n + '" class="' + (s.lifts_source === "override" && s.active_lifts === n ? "sel" : "") + '" aria-label="' + n + ' nostinta">' + n + "</button>";
-        var cols = s.max_lifts === 4 ? 4 : 2;
-        return '<div class="card"><div class="site-head"><div><div class="site-name">' + s.name + '</div><div class="sub">' + s.city + " · enintään " + s.max_lifts + " nostinta</div></div>" + src + "</div>" +
-          '<div class="now"><b>' + (s.active_lifts == null ? "–" : s.active_lifts) + "</b><span>nostinta laskennassa nyt</span></div>" +
-          '<p class="camera">Kamera näkee: <strong>' + s.auto_lifts + " käytössä</strong>" + (s.auto_fallback ? " (ei yhtään – laskenta käyttää 1)" : "") +
-          (s.lifts_source === "override" ? " · käsin asetus voimassa " + until(s.override_until) + " asti" : "") + "</p>" +
-          '<div class="choices" style="grid-template-columns:repeat(' + cols + ',1fr)">' + btns + "</div>" +
-          '<button type="button" class="auto" data-auto="' + s.id + '"' + (s.lifts_source === "auto" ? " disabled" : "") + ">Palauta automaattinen</button></div>";
+    function camText(s) {
+      var cam = data.cameras[s.id];
+      if (cam.tamper) return [cam.tamper === "snow" ? L("Lunta linssissä", "Snow on lens") : L("Linssi peitetty", "Lens blocked"), "red"];
+      if (cam.manual) return [L("Kamera pois (merkitty)", "Camera down (marked)"), "red"];
+      if (!cam.online || s.quality === "hidden") return [L("Kamera ei vastaa", "Camera offline"), "red"];
+      return [L("Kamera OK", "Camera OK"), "green"];
+    }
+    function pills(s) {
+      var st = stationState(s), c = camText(s), m = PN.modeInfo(s, lang);
+      return '<div class="pn-pills"><span class="pn-pill pn-pill--' + st[1] + '">' + E(st[0]) + '</span><span class="pn-pill pn-pill--' + c[1] + '">' + E(c[0]) + "</span>" +
+        '<span class="pn-pill pn-pill--' + (m.cls === "override" ? "blue" : m.cls === "learning" ? "yellow" : "green") + '">' + E(m.tag) + "</span>" +
+        ((s.down_flags || []).length ? '<span class="pn-pill pn-pill--red">' + L("Nostin ehkä rikki", "Lift possibly down") + "</span>" : "") + "</div>";
+    }
+    function metrics(s) {
+      var hidden = s.quality === "hidden" || !s.open;
+      var src = s.lifts_mode === "override" ? L("käsin", "manual") : s.lifts_mode === "learning" ? L("opettelu", "learning") : L("kamera", "camera");
+      return '<div class="pn-metrics">' +
+        '<div class="pn-metric"><b>' + (hidden ? "–" : s.queue_length) + "</b><span>" + L("Jonossa", "In line") + "</span></div>" +
+        '<div class="pn-metric"><b>' + (hidden ? "–" : E(s.wait_high_min === 0 ? L("Ei jonoa", "No queue") : s.wait_low_min === 0 ? L("alle 10 min", "under 10 min") : s.wait_low_min + "–" + s.wait_high_min + " min")) + "</b><span>" + L("Odotus", "Wait") + "</span></div>" +
+        '<div class="pn-metric"><b>' + (s.active_lifts == null ? "–" : s.active_lifts) + "<small> / " + s.max_lifts + "</small></b><span>" + L("Nostimet · ", "Lifts · ") + src + "</span></div>" +
+        '<div class="pn-metric"><b>' + s.served_today + "</b><span>" + L("Vaihdettu tänään", "Served today") + "</span></div>" +
+        '<div class="pn-metric"><b>' + s.served_yesterday + "</b><span>" + L("Eilen", "Yesterday") + "</span></div>" +
+        '<div class="pn-metric"><b>' + num(s.service_min, 1) + "<small> min</small></b><span>" + L("Keskim. vaihto", "Avg change") + "</span></div></div>";
+    }
+    function flagNote(s) {
+      var out = (s.down_flags || []).map(function (f) {
+        return '<div class="pn-mode pn-mode--flag">' + E(L("Nostin " + (f.lift + 1) + " ehkä rikki?", "Lift " + (f.lift + 1) + " possibly down?")) + "<small>" +
+          E(L("Tyhjänä " + f.idle_min + " min, vaikka jonossa on autoja (raja " + s.down_min + " min). Lounastauolla olevaa nostinta ei merkitä.", "Empty for " + f.idle_min + " min while cars wait (threshold " + s.down_min + " min). Lifts on a lunch break are never flagged.")) + "</small>" +
+          '<div class="pn-flag-btns"><button type="button" class="pn-btn pn-btn--danger" data-flag="confirm" data-site="' + s.id + '" data-lift="' + f.lift + '">' + L("Vahvista: rikki", "Confirm: down") + '</button><button type="button" class="pn-btn" data-flag="dismiss" data-site="' + s.id + '" data-lift="' + f.lift + '">' + L("Toimii – kuittaa", "It works – dismiss") + "</button></div></div>";
       }).join("");
-      $("ssites").innerHTML = html + '<p class="small">Demo: luvut ovat simuloituja. Käsin asetus nollautuu automaattisesti vuorokauden vaihtuessa.</p>';
+      out += (s.confirmed_down || []).map(function (i) {
+        return '<div class="pn-mode pn-mode--off">' + E(L("Nostin " + (i + 1) + " merkitty rikki", "Lift " + (i + 1) + " marked down")) + "<small>" + L("Pois kameran laskennasta, kunnes korjattu.", "Out of the camera count until fixed.") + '</small><div class="pn-flag-btns"><button type="button" class="pn-btn" data-flag="restore" data-site="' + s.id + '" data-lift="' + i + '">' + L("Korjattu – takaisin", "Fixed – back in") + "</button></div></div>";
+      }).join("");
+      return out;
     }
-    $("ssites").addEventListener("click", function (e) {
-      var b = e.target.closest("button"); if (!b) return;
-      if (b.dataset.auto) set(b.dataset.auto, null); else if (b.dataset.n) set(b.dataset.id, Number(b.dataset.n));
+    function flagAction(b) {
+      var id = b.dataset.site, i = Number(b.dataset.lift), a = b.dataset.flag;
+      var q = a === "confirm" ? L("Merkitäänkö " + OF[id] + " nostin " + (i + 1) + " rikki?", "Mark " + siteName(id) + " lift " + (i + 1) + " as down?") : a === "dismiss" ? L("Kuitataanko: " + OF[id] + " nostin " + (i + 1) + " toimii?", "Dismiss: " + siteName(id) + " lift " + (i + 1) + " works?") : L("Palautetaanko " + OF[id] + " nostin " + (i + 1) + " laskentaan?", "Put " + siteName(id) + " lift " + (i + 1) + " back in the count?");
+      PN.confirm(q, a === "confirm" ? L("Nostin jää pois kameran laskennasta, kunnes se merkitään korjatuksi tai siinä on taas auto 5 min.", "The lift stays out of the camera count until marked fixed or it holds a car for 5 min again.") : "", L("Kyllä", "Yes"), L("Peruuta", "Cancel"))
+        .then(function (ok) { if (ok) act("/v1/admin/sites/" + id + "/liftflag", { lift: i, action: a }, L("Tallennettu", "Saved")); });
+    }
+    document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-flag]"); if (b && $("ad-page").contains(b)) { e.stopPropagation(); flagAction(b); } }, true);
+
+    // ---------- overview ----------
+    function renderOverview() {
+      var S = data.sites, q = 0, served = 0, y = 0, cams = 0, open = 0, lost = 0;
+      S.forEach(function (s) { if (s.quality !== "hidden" && s.open) q += s.queue_length; served += s.served_today; y += s.served_yesterday; if (data.cameras[s.id].online && !data.cameras[s.id].tamper) cams++; if (s.open) open++; lost += s.abandoned_today; });
+      var flags = S.reduce(function (n, s) { return n + (s.down_flags || []).length; }, 0);
+      $("ad-flags").innerHTML = flags ? '<div class="pn-hint" style="border-left-color:var(--red);background:rgba(196,69,60,.12)">' + L(flags + " nostin" + (flags > 1 ? "ta" : "") + " ehkä rikki – vahvista alta.", flags + " lift" + (flags > 1 ? "s" : "") + " possibly down – please confirm below.") + "</div>" : "";
+      $("ad-totals").innerHTML = '<div class="pn-total"><b>' + q + "</b><span>" + L("Autoja jonossa yhteensä", "Cars in line, all") + '</span></div><div class="pn-total"><b>' + served + "</b><span>" + L("Vaihdettu tänään · eilen ", "Served today · yesterday ") + y + '</span></div><div class="pn-total"><b>' + cams + " / 5</b><span>" + L("Kamerat kunnossa", "Cameras OK") + '</span></div><div class="pn-total"><b>' + open + " / 5</b><span>" + L("Asemat auki", "Stations open") + "</span></div>";
+      $("ad-overview").innerHTML = S.map(function (s) {
+        return '<div class="pn-card pn-card--click" data-goto="' + s.id + '"><div class="pn-site-head"><div class="pn-site-name">' + E(s.name) + "</div>" + pills(s) + "</div>" + metrics(s) + PN.liftBoxes(s, lang) + PN.modeHtml(s, lang) + PN.lunchNote(s, lang) + flagNote(s) + PN.slowNote(s, lang) + "</div>";
+      }).join("");
+      var camIssues = S.filter(function (s) { return camText(s)[1] === "red"; }).length;
+      var d = document.querySelector('[data-dot="cameras"]'); if (d) { d.hidden = !camIssues; d.textContent = camIssues; }
+      var o = document.querySelector('[data-dot="overview"]'); if (o) { o.hidden = !flags; o.textContent = flags; }
+    }
+    // ---------- stations ----------
+    function setting(id, title, lead, min, max, step, unit, key) {
+      return '<div class="pn-card">' + label(title) + '<p class="pn-small">' + lead + '</p><div class="pn-inline" style="margin-top:10px"><input type="number" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '"> <span class="pn-small">' + unit + '</span><button type="button" class="pn-btn" data-save="' + key + '" data-in="' + id + '">' + L("Tallenna", "Save") + "</button></div></div>";
+    }
+    function buildSettings() {
+      $("ad-settings").innerHTML =
+        setting("ad-learn", L("Nostimien opetteluikkuna", "Lift learning window"), L("Aukaisun jälkeen kamera vain seuraa, mille nostimille autoja tulee, ja päättää sitten päivän nostinmäärän. Sillä välin sivusto käyttää aseman oletusta.", "After opening the camera only watches which lifts get cars, then decides the day's lift count. Meanwhile the website uses the station default."), 5, 120, 5, L("min (oletus 30)", "min (default 30)"), "learn_minutes") +
+        setting("ad-slow", L("Hidas / jumissa oleva auto", "Slow / stuck car"), L("Jos auto on nostimella tätä kauemmin, nostin merkitään hitaaksi: sitä ei lasketa keskiarvoon, ja odotusarvio pitää nostimen poissa käytöstä, kunnes se vapautuu.", "If a car stays on a lift longer than this, the lift is marked slow: it's left out of the average and the estimate treats the lift as unavailable until it frees up."), 15, 20, 1, L("min (15–20, oletus 15)", "min (15–20, default 15)"), "slow_min") +
+        setting("ad-down", L("Nostin ehkä rikki", "Lift possibly down"), L("Kun kameran laskema nostin on tyhjänä näin kauan jonon aikana, se nostetaan ylläpidolle vahvistettavaksi. Lounastauolla olevaa nostinta ei merkitä.", "When a lift sits empty this long while cars wait, it's flagged to the admin to confirm. Lifts on a lunch break are never flagged."), 15, 120, 5, L("min (oletus 30)", "min (default 30)"), "down_min") +
+        '<div class="pn-card">' + label(L("Demo: aukioloajat ja nopeus", "Demo: hours and speed")) + '<p class="pn-small">' + L("Demossa asemat ovat oletuksena aina auki. Ota aukioloajat käyttöön nähdäksesi suljettu-tilan ja \u201dEhdit vielä tänään\u201d -tilan. Nopeutus näyttää esim. opetteluikkunan päättymisen nopeasti.", "In the demo stations are always open by default. Use real hours to see the closed state and \u201cYou can still make it today\u201d. Speed-up shows e.g. the learning window finishing quickly.") + "</p>" +
+        '<div class="pn-row pn-seg" id="ad-hoursmode" style="margin-top:10px"><button type="button" data-h="0">' + L("Aina auki (demo)", "Always open (demo)") + '</button><button type="button" data-h="1">' + L("Käytä aukioloaikoja", "Use opening hours") + "</button></div>" +
+        '<div class="pn-row pn-seg" id="ad-speed" style="margin-top:8px"><button type="button" data-s="1">1×</button><button type="button" data-s="5">5×</button><button type="button" data-s="20">20×</button></div></div>';
+      $("ad-learn").value = data.learn_minutes; $("ad-slow").value = data.slow_min; $("ad-down").value = data.down_min;
+      $("ad-settings").onclick = function (e) {
+        var b = e.target.closest("button"); if (!b) return;
+        if (b.dataset.save) { var body = {}; body[b.dataset.save] = Number($(b.dataset.in).value); act("/v1/admin/settings", body, L("Asetus tallennettu", "Setting saved")); }
+        else if (b.dataset.h) act("/v1/admin/hours-mode", { real: b.dataset.h === "1" }, b.dataset.h === "1" ? L("Aukioloajat käytössä", "Opening hours in use") : L("Aina auki (demo)", "Always open (demo)"));
+        else if (b.dataset.s) act("/v1/admin/speed", { speed: Number(b.dataset.s) }, L("Nopeus ", "Speed ") + b.dataset.s + "×");
+      };
+      built.settings = true;
+    }
+    function updateSettings() {
+      Array.prototype.forEach.call($("ad-hoursmode").children, function (b) { b.className = (b.dataset.h === "1") === !!data.real_hours ? "on" : ""; });
+      Array.prototype.forEach.call($("ad-speed").children, function (b) { b.className = Number(b.dataset.s) === data.speed ? "on" : ""; });
+    }
+    function hoursEditor(s) {
+      return DAYS.map(function (d) {
+        var h = s.hours[d];
+        return "<span>" + WD[lang][d] + '</span><input type="time" data-day="' + d + '" data-k="o" value="' + (h ? hhmm(h[0]) : "09:00") + '"' + (h ? "" : " disabled") + '><input type="time" data-day="' + d + '" data-k="c" value="' + (h ? hhmm(h[1]) : "18:00") + '"' + (h ? "" : " disabled") + '><label><input type="checkbox" data-day="' + d + '" data-k="x"' + (h ? "" : " checked") + "> " + L("suljettu", "closed") + "</label>";
+      }).join("");
+    }
+    function buildStation(s) {
+      var el = document.createElement("div"); el.className = "pn-card"; el.id = "ad-st-" + s.id;
+      var btns = ""; for (var n = 1; n <= s.max_lifts; n++) btns += '<button type="button" data-act="lifts" data-n="' + n + '">' + n + "</button>";
+      el.innerHTML = '<div class="pn-site-head"><div class="pn-site-name">' + E(s.name) + '</div><div data-dyn="pills"></div></div><div data-dyn="mode"></div>' +
+        '<p class="pn-label">' + L("Nostimet käytössä (käsin, päivän loppuun)", "Lifts working (manual, until closing)") + '</p><div class="pn-choices" style="grid-template-columns:repeat(' + s.max_lifts + ',1fr)">' + btns + "</div>" +
+        '<div class="pn-row" style="margin-top:10px"><button type="button" class="pn-btn" data-act="auto">' + L("Kameran laskentaan", "Back to camera") + '</button><button type="button" class="pn-btn" data-act="relearn">' + L("Opettele uudelleen", "Re-learn") + "</button></div>" +
+        '<p class="pn-label">' + L("Lounastauko (30 min / nostin)", "Lunch break (30 min per lift)") + '</p><div data-dyn="lunch"></div>' +
+        '<p class="pn-label">' + L("Asema", "Station") + '</p><div class="pn-row pn-seg" data-dyn="station"><button type="button" data-act="open">' + L("Auki", "Open") + '</button><button type="button" data-act="break" data-m="15">' + L("Tauko 15 min", "Break 15 min") + '</button><button type="button" data-act="break" data-m="30">' + L("Tauko 30 min", "Break 30 min") + '</button><button type="button" data-act="closed_day" class="pn-btn--danger">' + L("Suljettu tänään", "Closed today") + "</button></div>" +
+        '<p class="pn-small" style="margin-top:10px" data-dyn="camnote"></p>' +
+        "<details><summary>" + L("Aukioloajat", "Opening hours") + '</summary><div class="pn-hours" data-dyn="hours">' + hoursEditor(s) + '</div><button type="button" class="pn-btn" data-act="hours">' + L("Tallenna aukioloajat", "Save opening hours") + "</button></details>" +
+        "<details><summary>" + L("Henkilöstön PIN", "Staff PIN") + '</summary><p class="pn-small" style="margin:6px 0 8px!important">' + L("Nykyinen PIN: ", "Current PIN: ") + '<b data-dyn="pin" style="color:#fff;letter-spacing:2px"></b> · ' + E(L("avaa vain " + OF[s.id] + " henkilöstösivun.", "opens only the " + s.name + " staff page.")) + '</p><div class="pn-inline"><input type="text" inputmode="numeric" maxlength="6" placeholder="' + L("Uusi PIN", "New PIN") + '" data-dyn="newpin"><button type="button" class="pn-btn" data-act="pin">' + L("Vaihda PIN", "Change PIN") + "</button></div></details>";
+      el.querySelector("[data-dyn=hours]").addEventListener("change", function (e) {
+        var c = e.target; if (c.dataset.k !== "x") return;
+        el.querySelectorAll('[data-day="' + c.dataset.day + '"][type=time]').forEach(function (i) { i.disabled = c.checked; });
+      });
+      el.addEventListener("click", function (e) { var b = e.target.closest("[data-act]"); if (b) stationAction(s.id, b, el); });
+      return el;
+    }
+    function stationAction(id, b, el) {
+      var s = data.sites.filter(function (x) { return x.id === id; })[0], a = b.dataset.act, base = "/v1/admin/sites/" + id + "/", no = L("Peruuta", "Cancel");
+      if (a === "lifts") { var n = Number(b.dataset.n); PN.confirm(L("Asetetaanko " + lifts(n) + " " + IN[id] + "?", "Set " + lifts(n) + " at " + s.name + "?"), L("Käsin asetus voittaa kameran luvun tämän päivän loppuun asti.", "A manual setting overrides the camera until closing today."), L("Kyllä, aseta", "Yes, set"), no).then(function (ok) { if (ok) act(base + "override", { lifts: n }, s.name + ": " + lifts(n)); }); }
+      else if (a === "auto") PN.confirm(L("Palautetaanko " + OF[id] + " nostimet kameran laskentaan?", "Return " + s.name + " to the camera count?"), "", L("Kyllä, palauta", "Yes, return"), no).then(function (ok) { if (ok) act(base + "override", { lifts: null }, s.name + ": " + L("kameran laskenta", "camera count")); });
+      else if (a === "relearn") PN.confirm(L("Aloitetaanko " + OF[id] + " nostimien opettelu alusta?", "Restart lift learning at " + s.name + "?"), L("Kamera seuraa " + data.learn_minutes + " min ja päättää sitten nostinmäärän.", "The camera watches for " + data.learn_minutes + " min and then decides the lift count."), L("Kyllä", "Yes"), no).then(function (ok) { if (ok) act(base + "relearn", {}, s.name + ": " + L("opettelu alkoi", "learning started")); });
+      else if (a === "lunch") { var i = Number(b.dataset.lift), end = b.dataset.on === "1"; PN.confirm(end ? L("Lopetetaanko " + OF[id] + " nostimen " + (i + 1) + " lounastauko?", "End lunch for " + s.name + " lift " + (i + 1) + "?") : L("Aloitetaanko lounastauko: " + OF[id] + " nostin " + (i + 1) + "?", "Start lunch: " + s.name + " lift " + (i + 1) + "?"), end ? "" : L("Nostin lasketaan pois arviosta 30 min ja palaa sitten itsestään.", "The lift is left out of the estimate for 30 min, then returns by itself."), L("Kyllä", "Yes"), no).then(function (ok) { if (ok) act(base + "lunch", { lift: i, action: end ? "end" : "start" }, s.name + ": " + L(end ? "tauko lopetettu" : "lounastauko alkoi", end ? "break ended" : "lunch started")); }); }
+      else if (a === "open") act(base + "station", { mode: "open" }, s.name + L(" avattu", " opened"));
+      else if (a === "break") PN.confirm(s.name + L(": tauko " + b.dataset.m + " min?", ": break " + b.dataset.m + " min?"), L("Sivusto näyttää taukoajan, eikä odotusarviota.", "The website shows the break instead of an estimate."), L("Kyllä, tauko", "Yes, break"), no).then(function (ok) { if (ok) act(base + "station", { mode: "break", minutes: Number(b.dataset.m) }, s.name + L(": tauko", ": break")); });
+      else if (a === "closed_day") PN.confirm(L("Suljetaanko " + s.name + " loppupäiväksi?", "Close " + s.name + " for the rest of the day?"), L("Sivusto näyttää aseman suljettuna ja seuraavan aukeamisajan.", "The website shows the station as closed and the next opening time."), L("Kyllä, sulje", "Yes, close"), no).then(function (ok) { if (ok) act(base + "station", { mode: "closed_day" }, s.name + L(" suljettu tänään", " closed today")); });
+      else if (a === "hours") {
+        var hours = {};
+        DAYS.forEach(function (d) { var x = el.querySelector('[data-day="' + d + '"][data-k=x]').checked; hours[d] = x ? null : [mins(el.querySelector('[data-day="' + d + '"][data-k=o]').value), mins(el.querySelector('[data-day="' + d + '"][data-k=c]').value)]; });
+        act(base + "hours", { hours: hours }, s.name + L(": aukioloajat tallennettu", ": hours saved"));
+      } else if (a === "pin") {
+        var p = el.querySelector("[data-dyn=newpin]").value.trim();
+        PN.confirm(L("Vaihdetaanko " + OF[id] + " PIN?", "Change the " + s.name + " PIN?"), L("Vanha PIN lakkaa toimimasta heti, ja kirjautuneet kirjataan ulos.", "The old PIN stops working at once and logged-in staff are logged out."), L("Kyllä, vaihda", "Yes, change"), no).then(function (ok) { if (ok) act(base + "pin", { pin: p }, s.name + L(": PIN vaihdettu", ": PIN changed")).then(function () { el.querySelector("[data-dyn=newpin]").value = ""; }); });
+      }
+    }
+    function renderStations() {
+      if (!built.settings) buildSettings(); updateSettings();
+      data.sites.forEach(function (s) {
+        var el = $("ad-st-" + s.id); if (!el) { el = buildStation(s); $("ad-stations").appendChild(el); }
+        el.querySelector("[data-dyn=pills]").innerHTML = pills(s);
+        el.querySelector("[data-dyn=mode]").innerHTML = PN.liftBoxes(s, lang) + PN.modeHtml(s, lang) + PN.lunchNote(s, lang) + flagNote(s) + PN.slowNote(s, lang);
+        el.querySelectorAll("[data-act=lifts]").forEach(function (b) { b.className = s.lifts_mode === "override" && s.override_lifts === Number(b.dataset.n) ? "sel" : ""; });
+        var mode = s.closed_reason === "break" ? "break" : s.closed_reason === "closed_day" ? "closed_day" : "open";
+        el.querySelectorAll("[data-dyn=station] button").forEach(function (b) { b.classList.toggle("on", b.dataset.act === mode); });
+        var onL = {}, lr = ""; (s.lunch || []).forEach(function (l) { onL[l.lift] = l; });
+        for (var i = 0; i < s.max_lifts; i++) { var l = onL[i]; lr += '<button type="button" data-act="lunch" data-lift="' + i + '" data-on="' + (l ? 1 : 0) + '" class="' + (l ? "on" : "") + '">' + L("Nostin ", "Lift ") + (i + 1) + (l ? " · " + l.remaining_min + " min" : "") + "</button>"; }
+        el.querySelector("[data-dyn=lunch]").innerHTML = '<div class="pn-row pn-seg">' + lr + "</div>";
+        var c = camText(s); el.querySelector("[data-dyn=camnote]").innerHTML = L("Kamera: ", "Camera: ") + "<b style=\"color:" + (c[1] === "red" ? "var(--red)" : "var(--green)") + '">' + E(c[0]) + "</b> · " + L("merkitse pois / palauta Kamerat-välilehdellä (vain ylläpito).", "mark down / restore on the Health & alerts tab (admin only).");
+        el.querySelector("[data-dyn=pin]").textContent = data.pins[s.id];
+      });
+    }
+    // ---------- cameras / health & alerts ----------
+    function ago(t) { var m = Math.max(0, Math.round((data.generated_at - t) / 60000)); return m < 1 ? L("juuri nyt", "just now") : L(m + " min sitten", m + " min ago"); }
+    function bars(n) { var h = ""; for (var i = 1; i <= 4; i++) h += '<i class="' + (i <= n ? "on" : "") + '" style="height:' + (i * 4) + 'px"></i>'; return '<span class="pn-bars">' + h + "</span>"; }
+    function renderCams() {
+      $("ad-cams").innerHTML = data.sites.map(function (s) {
+        var c = data.cameras[s.id], st = camText(s);
+        var btns = (c.manual || c.offline) ? '<button type="button" class="pn-btn" data-cam="restore" data-site="' + s.id + '">' + L("Palauta kamera", "Restore camera") + "</button>" : '<button type="button" class="pn-btn pn-btn--danger" data-cam="down" data-site="' + s.id + '">' + L("Merkitse kamera pois", "Mark camera down") + "</button>";
+        var demo = (c.offline ? "" : '<button type="button" class="pn-btn" data-cam="outage" data-site="' + s.id + '">' + L("Demo: yhteyskatkos", "Demo: outage") + "</button>") +
+          (c.tamper ? '<button type="button" class="pn-btn" data-cam="untamper" data-site="' + s.id + '">' + L("Poista häiriö", "Clear tamper") + "</button>" : '<button type="button" class="pn-btn" data-cam="snow" data-site="' + s.id + '">' + L("Demo: lunta linssissä", "Demo: snow on lens") + "</button>");
+        return '<div class="pn-card"><div class="pn-site-head"><div class="pn-site-name">' + E(s.name) + '</div><div class="pn-pills"><span class="pn-pill pn-pill--' + st[1] + '">' + E(st[0]) + "</span></div></div>" +
+          '<div class="pn-kv">' +
+          "<div><b>" + clk(c.last_event_at) + "</b><span>" + L("Viimeisin tapahtuma · ", "Last event · ") + ago(c.last_event_at) + "</span></div>" +
+          "<div><b>" + (c.signal_dbm == null ? "–" : bars(c.signal_bars) + c.signal_dbm + " dBm") + "</b><span>" + c.network + L("-signaali", " signal") + "</span></div>" +
+          "<div><b>" + num(c.data_mb_today, 1) + " MB</b><span>" + L("Data tänään (katto " + c.data_mb_month_cap + " MB/kk)", "Data today (cap " + c.data_mb_month_cap + " MB/mo)") + "</span></div>" +
+          "<div><b>" + (c.ir_on ? L("Päällä", "On") : L("Pois", "Off")) + "</b><span>" + L("IR-valo (pimeä)", "IR light (dark)") + "</span></div>" +
+          "<div><b>" + num(c.temp_c, 1) + " °C</b><span>" + L("Kotelo · ulkona ", "Enclosure · outside ") + num(c.outdoor_c, 1) + " °C</span></div>" +
+          "<div><b>" + (c.tamper ? (c.tamper === "snow" ? L("Lunta", "Snow") : L("Peitetty", "Blocked")) : L("Kunnossa", "Clear")) + "</b><span>" + L("Linssi (peukalointi)", "Lens (tamper)") + "</span></div></div>" +
+          '<div class="pn-row" style="margin-top:10px">' + btns + demo + "</div></div>";
+      }).join("");
+      var A = data.alerts || [];
+      $("ad-alerts").innerHTML = A.length ? A.map(function (a) {
+        var t = a.kind === "offline" ? L("Kamera ei ole vastannut " + a.minutes + " min.", "Camera hasn't responded for " + a.minutes + " min.") :
+          a.kind === "restored" ? L("Kamera taas yhteydessä.", "Camera back online.") :
+          a.kind === "tamper" ? L("Kameran kuva estynyt: " + (a.tamper === "snow" ? "lunta linssissä" : "linssi peitetty") + ". Arvio piilotettu.", "Camera view obstructed: " + (a.tamper === "snow" ? "snow on the lens" : "lens blocked") + ". Estimate hidden.") :
+          a.kind === "tamper_cleared" ? L("Kameran kuva taas kunnossa.", "Camera view clear again.") :
+          L("Nostin " + (a.lift + 1) + " ehkä rikki: tyhjänä " + a.minutes + " min jonon aikana – vahvista.", "Lift " + (a.lift + 1) + " possibly down: empty " + a.minutes + " min while cars waited – please confirm.");
+        return '<div class="pn-alert"><time>' + clk(a.at) + "</time><div><b style=\"color:#fff\">" + E(siteName(a.site)) + "</b> · " + E(t) + (a.sms ? '<br><span class="pn-sms">' + L("Tekstiviesti lähetetty ylläpidolle (simuloitu)", "SMS sent to admin (simulated)") + "</span>" : "") + "</div></div>";
+      }).join("") : '<p class="pn-small">' + L("Ei hälytyksiä tänään.", "No alerts today.") + "</p>";
+    }
+    $("ad-cams").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-cam]"); if (!b) return; var id = b.dataset.site, nm = siteName(id), base = "/v1/admin/sites/" + id + "/", a = b.dataset.cam;
+      if (a === "down") PN.confirm(L("Merkitäänkö " + OF[id] + " kamera pois käytöstä?", "Mark the " + nm + " camera down?"), L("Sivusto näyttää \u201dArvio ei saatavilla\u201d, kunnes kamera palautetaan.", "The website shows \u201cEstimate not available\u201d until the camera is restored."), L("Kyllä, merkitse", "Yes, mark down"), L("Peruuta", "Cancel")).then(function (ok) { if (ok) act(base + "camera", { offline: true }, nm + L(": kamera merkitty pois", ": camera marked down")); });
+      else if (a === "restore") act(base + "camera", { offline: false }, nm + L(": kamera palautettu", ": camera restored"));
+      else if (a === "outage") act(base + "outage", {}, nm + L(": katkos simuloitu – hälytys 3 min kuluttua", ": outage simulated – alert after 3 min"));
+      else if (a === "snow") act(base + "tamper", { kind: "snow" }, nm + L(": lumi simuloitu", ": snow simulated"));
+      else if (a === "untamper") act(base + "tamper", { kind: null }, nm + L(": häiriö poistettu", ": tamper cleared"));
     });
-    show();
+    // ---------- statistics ----------
+    function avg(a, n) { return n ? num(Math.round((a / n) * 10) / 10, 1) + " min" : "–"; }
+    function statsDay() {
+      var S = data.sites, T = { t: 0, y: 0, tm: 0, ym: 0 };
+      var head = '<div class="pn-card">' + label(L("Vaihdetut autot asemittain", "Cars served per station")) + '<div class="pn-scroll"><table class="pn-table"><thead><tr><th>' + L("Asema", "Station") + "</th><th>" + L("Tänään", "Today") + "</th><th>" + L("Eilen", "Yesterday") + "</th><th>" + L("Ero", "Diff") + "</th><th>" + L("Ka. tänään", "Avg today") + "</th></tr></thead><tbody>" +
+        S.map(function (s) { var d = s.served_today - s.served_yesterday; return "<tr><td>" + E(s.name) + "</td><td>" + s.served_today + "</td><td>" + s.served_yesterday + "</td><td>" + (d > 0 ? "+" : "") + d + "</td><td>" + num(s.service_min, 1) + " min</td></tr>"; }).join("") + "</tbody></table></div></div>";
+      var per = '<div class="pn-grid" style="margin-top:14px">' + S.map(function (s) {
+        var st = { t: 0, y: 0, tm: 0, ym: 0 };
+        var rows = s.lift_stats.map(function (l, i) {
+          st.t += l.served; st.y += l.served_y; st.tm += (l.avg_min || 0) * l.served; st.ym += (l.avg_min_y || 0) * l.served_y;
+          return "<tr><td>" + L("Nostin ", "Lift ") + (i + 1) + "</td><td>" + l.served + "</td><td>" + avg((l.avg_min || 0) * l.served, l.served) + "</td><td>" + l.served_y + "</td><td>" + avg((l.avg_min_y || 0) * l.served_y, l.served_y) + "</td></tr>";
+        }).join("");
+        T.t += st.t; T.y += st.y; T.tm += st.tm; T.ym += st.ym;
+        return '<div class="pn-card"><div class="pn-site-name" style="font-size:20px">' + E(s.name) + '</div><div class="pn-scroll"><table class="pn-table" style="margin-top:8px"><thead><tr><th>' + L("Nostin", "Lift") + "</th><th>" + L("Tänään", "Today") + "</th><th>" + L("Ka.", "Avg") + "</th><th>" + L("Eilen", "Yest.") + "</th><th>" + L("Ka.", "Avg") + "</th></tr></thead><tbody>" + rows +
+          "<tr><td><b>" + L("Yhteensä", "Total") + "</b></td><td><b>" + st.t + "</b></td><td>" + avg(st.tm, st.t) + "</td><td><b>" + st.y + "</b></td><td>" + avg(st.ym, st.y) + "</td></tr></tbody></table></div></div>";
+      }).join("") + "</div>";
+      var grand = '<div class="pn-card pn-grand" style="margin-top:14px">' + label(L("Kaikki asemat yhteensä", "All stations combined")) + '<div class="pn-totals" style="margin:6px 0 10px"><div class="pn-total"><b>' + T.t + "</b><span>" + L("Vaihdettu tänään", "Served today") + '</span></div><div class="pn-total"><b>' + T.y + "</b><span>" + L("Eilen", "Yesterday") + '</span></div><div class="pn-total"><b>' + avg(T.tm, T.t) + "</b><span>" + L("Ka. vaihto tänään", "Avg change today") + '</span></div><div class="pn-total"><b>' + avg(T.ym, T.y) + "</b><span>" + L("Ka. vaihto eilen", "Avg change yesterday") + "</span></div></div>" +
+        '<p class="pn-small">' + L("Luvut ovat simuloituja. \u201dTänään\u201d sisältää demon käynnistyksen ajan simuloidut tunnit; \u201deilen\u201d on simuloitu eilisen aukioloajalle. Keskiarvo nostinta kohti sisältää myös hitaat autot; aseman odotusarvio käyttää mediaania ilman niitä.", "Numbers are simulated. \u201cToday\u201d includes the hours simulated at demo start; \u201cyesterday\u201d is simulated over yesterday's hours. The per-lift average includes slow cars; the station's estimate uses the median without them.") + "</p></div>";
+      return head + per + grand;
+    }
+    function pct(a, s) { return a + s ? num((a / (a + s)) * 100, 1) + " %" : "–"; }
+    function statsLost() {
+      if (!hist) return '<p class="pn-small">' + L("Ladataan…", "Loading…") + "</p>";
+      var S = data.sites, tA = 0, tS = 0, wA = 0, wS = 0;
+      var rows = S.map(function (s) {
+        var h = hist.lost[s.id], a7 = 0, s7 = 0; h.days.forEach(function (d) { a7 += d.abandoned; s7 += d.served; });
+        tA += h.today.abandoned; tS += h.today.served; wA += a7; wS += s7;
+        return "<tr><td>" + E(s.name) + "</td><td>" + h.today.abandoned + "</td><td>" + pct(h.today.abandoned, h.today.served) + "</td><td>" + a7 + "</td><td>" + num(a7 / h.days.length, 1) + "</td><td>" + pct(a7, s7) + "</td></tr>";
+      }).join("");
+      var days = hist.lost.olari.days;
+      var drows = days.slice().reverse().map(function (d, k) {
+        var idx = days.length - 1 - k, sum = 0;
+        return "<tr><td>" + dayLabel(d.day) + "</td>" + S.map(function (s) { var v = hist.lost[s.id].days[idx].abandoned; sum += v; return "<td>" + v + "</td>"; }).join("") + "<td><b>" + sum + "</b></td></tr>";
+      }).join("");
+      return '<div class="pn-card">' + label(L("Jonosta lähteneet ilman palvelua", "Left the line without service")) + '<p class="pn-small" style="margin:0 0 8px">' + L("Autot, jotka liittyivät jonoon (yli 45 s kaistalla) mutta ajoivat pois ennen vaihtoa. Osuus = lähteneet ÷ (lähteneet + palvellut).", "Cars that joined the line (over 45 s in the lane) but drove off before service. Share = left ÷ (left + served).") + '</p><div class="pn-scroll"><table class="pn-table"><thead><tr><th>' + L("Asema", "Station") + "</th><th>" + L("Tänään", "Today") + "</th><th>%</th><th>" + L("7 pv", "7 days") + "</th><th>" + L("/ pv", "/ day") + "</th><th>%</th></tr></thead><tbody>" + rows +
+        "<tr><td><b>" + L("Kaikki", "All") + "</b></td><td><b>" + tA + "</b></td><td>" + pct(tA, tS) + "</td><td><b>" + wA + "</b></td><td>" + num(wA / days.length, 1) + "</td><td>" + pct(wA, wS) + "</td></tr></tbody></table></div></div>" +
+        '<div class="pn-card" style="margin-top:14px">' + label(L("Viime aukiolopäivät", "Recent open days") + '<span class="pn-sim">' + L("simuloitu", "simulated") + "</span>") + '<div class="pn-scroll"><table class="pn-table"><thead><tr><th>' + L("Päivä", "Day") + "</th>" + S.map(function (s) { return "<th>" + E(s.name.replace("Ala-Tikkurila", "Ala-Tikk.").replace("Kannelmäki", "Kannelm.")) + "</th>"; }).join("") + "<th>" + L("Yht.", "All") + "</th></tr></thead><tbody>" + drows + "</tbody></table></div></div>";
+    }
+    function heatColor(v, max) {
+      if (v == null) return null; var x = max ? Math.min(1, v / max) : 0;
+      var stops = [[21, 42, 28], [61, 154, 95], [212, 160, 23], [196, 69, 60]], p = x * 3, i = Math.min(2, Math.floor(p)), f = p - i, a = stops[i], b = stops[i + 1];
+      return "rgb(" + Math.round(a[0] + (b[0] - a[0]) * f) + "," + Math.round(a[1] + (b[1] - a[1]) * f) + "," + Math.round(a[2] + (b[2] - a[2]) * f) + ")";
+    }
+    function statsHeat() {
+      if (!hist) return '<p class="pn-small">' + L("Ladataan…", "Loading…") + "</p>";
+      var g = hist.heat[heatSite], max = 0, H = []; for (var h = 9; h < 18; h++) H.push(h);
+      g.forEach(function (r) { r.forEach(function (v) { if (v != null && v > max) max = v; }); });
+      var seg = '<div class="pn-row pn-seg" id="ad-heatsites" style="margin-bottom:12px">' + data.sites.map(function (s) { return '<button type="button" data-hs="' + s.id + '" class="' + (s.id === heatSite ? "on" : "") + '">' + E(s.name) + "</button>"; }).join("") + "</div>";
+      var rows = [1, 2, 3, 4, 5, 6].map(function (d) {
+        return "<tr><th style=\"text-align:left\">" + WD[lang][d] + "</th>" + H.map(function (h) { var v = g[d][h], c = heatColor(v, max); return c ? '<td style="background:' + c + '" title="' + v + '">' + num(v, v < 10 ? 1 : 0) + "</td>" : '<td class="na">·</td>'; }).join("") + "</tr>";
+      }).join("");
+      return '<div class="pn-card">' + label(L("Ruuhka-ajat: keskimäärin autoja jonossa", "Busy hours: average cars in line") + '<span class="pn-sim">' + L("simuloitu", "simulated") + "</span>") + seg +
+        '<div class="pn-scroll"><table class="pn-heat"><thead><tr><th></th>' + H.map(function (h) { return "<th>" + h + "</th>"; }).join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        '<div class="pn-legend-heat"><span>' + L("hiljaista", "quiet") + "</span><i></i><span>" + L("ruuhkaa", "busy") + "</span></div>" +
+        '<p class="pn-small" style="margin-top:10px">' + L("Viikonpäivä × kellonaika, " + hist.days + " simuloidun päivän keskiarvo (" + dayLabel(hist.from) + "–" + dayLabel(hist.to) + "). Sunnuntaisin suljettu. Lauantaisin auki 10–16.", "Weekday × hour, average of " + hist.days + " simulated days (" + dayLabel(hist.from) + "–" + dayLabel(hist.to) + "). Closed on Sundays. Saturdays open 10–16.") + "</p></div>";
+    }
+    function renderStats() {
+      if (!data) return;
+      $("ad-stats").innerHTML = sub === "lost" ? statsLost() : sub === "heat" ? statsHeat() : statsDay();
+      var hs = $("ad-heatsites"); if (hs) hs.onclick = function (e) { var b = e.target.closest("[data-hs]"); if (b) { heatSite = b.dataset.hs; renderStats(); } };
+    }
+    function setSub(x) { sub = x; Array.prototype.forEach.call($("ad-subtabs").children, function (b) { b.classList.toggle("on", b.dataset.sub === x); }); renderStats(); }
+    $("ad-subtabs").onclick = function (e) { var b = e.target.closest("[data-sub]"); if (b) setSub(b.dataset.sub); };
+    // ---------- accuracy ----------
+    function errCls(p) { if (p == null) return ""; var a = Math.abs(p); return a <= 3 ? "pn-err-ok" : a <= 7 ? "pn-err-pos" : "pn-err-bad"; }
+    function errTxt(p) { return p == null ? "–" : (p > 0 ? "+" : "") + num(p, 1) + " %"; }
+    function renderAcc() {
+      if (!data) return;
+      if (!hist) { $("ad-acc").innerHTML = '<p class="pn-small">' + L("Ladataan…", "Loading…") + "</p>"; return; }
+      var keep = {}; document.querySelectorAll("#ad-acc input[data-rc]").forEach(function (i) { if (i.value) keep[i.dataset.rc] = i.value; });
+      var focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.rc : null;
+      $("ad-acc").innerHTML = '<div class="pn-hint">' + L("Syötä päivän kuittimäärä asemittain. Kameran laskemaa määrää verrataan kuitteihin, ja suhteesta lasketaan asemakohtainen korjauskerroin seuraavalle päivälle (liukuva keskiarvo, uusin päivä 30 %).", "Enter the day's receipt count per station. The camera count is compared with the receipts, and the ratio sets a per-station correction factor for the next day (rolling average, newest day 30 %).") +
+        "<small>" + L("Kerroin korjaa jonossa olevien autojen määrää odotusarviossa (esim. 1,04 = kamera näkee keskimäärin 4 % liian vähän autoja). Historia on simuloitua.", "The factor corrects the number of cars in line in the wait estimate (e.g. 1.04 = the camera sees about 4 % too few cars). The history is simulated.") + "</small></div>" +
+        '<div class="pn-grid">' + data.sites.map(function (s) {
+          var a = hist.accuracy[s.id], t = a.today;
+          var rows = a.history.slice(0, 7).map(function (h) { return "<tr><td>" + dayLabel(h.day) + "</td><td>" + h.camera + "</td><td>" + h.receipts + '</td><td class="' + errCls(h.err_pct) + '">' + errTxt(h.err_pct) + "</td><td>" + num(h.factor_after, 3) + "</td></tr>"; }).join("");
+          return '<div class="pn-card" id="ad-acc-' + s.id + '"><div class="pn-site-name" style="font-size:20px">' + E(s.name) + "</div>" +
+            '<div class="pn-kv"><div><b>' + t.camera + "</b><span>" + L("Kamera tänään", "Camera today") + "</span></div><div><b>" + (t.receipts == null ? "–" : t.receipts) + "</b><span>" + L("Kuitit tänään", "Receipts today") + '</span></div><div><b class="' + errCls(t.err_pct) + '">' + errTxt(t.err_pct) + "</b><span>" + L("Virhe", "Error") + "</span></div><div><b>" + num(a.factor, 3) + (a.factor_next != null ? ' <small style="font-size:13px;color:var(--muted)">→ ' + num(a.factor_next, 3) + "</small>" : "") + "</b><span>" + L("Kerroin nyt → huomenna", "Factor now → tomorrow") + "</span></div></div>" +
+            '<div class="pn-input-row"><input type="number" inputmode="numeric" min="0" max="2000" data-rc="' + s.id + '" placeholder="' + L("kuitit", "receipts") + '"><button type="button" class="pn-btn" data-rcsave="' + s.id + '">' + L("Tallenna kuitit", "Save receipts") + "</button></div>" +
+            '<div class="pn-scroll" style="margin-top:10px"><table class="pn-table"><thead><tr><th>' + L("Päivä", "Day") + "</th><th>" + L("Kamera", "Camera") + "</th><th>" + L("Kuitit", "Receipts") + "</th><th>" + L("Virhe", "Error") + "</th><th>" + L("Kerroin", "Factor") + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></div>";
+        }).join("") + "</div>";
+      document.querySelectorAll("#ad-acc input[data-rc]").forEach(function (i) { if (keep[i.dataset.rc]) i.value = keep[i.dataset.rc]; if (focused === i.dataset.rc) i.focus(); });
+    }
+    $("ad-acc").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-rcsave]"); if (!b) return; var id = b.dataset.rcsave, v = document.querySelector('#ad-acc input[data-rc="' + id + '"]').value;
+      if (v === "") { PN.toast(L("Syötä kuittimäärä", "Enter the receipt count"), true); return; }
+      act("/v1/admin/sites/" + id + "/receipts", { count: Number(v) }, siteName(id) + L(": kuitit tallennettu", ": receipts saved")).then(function () { loadHist(); });
+    });
+    // ---------- weather (FMI open data, fetched from the browser; CORS allowed) ----------
+    var WX = { state: "idle", data: null, at: 0 }, AREAS = [["Espoo", "espoo", ["olari"]], ["Helsinki", "helsinki", ["puotila", "kannelmaki", "ala-tikkurila"]], ["Järvenpää", "järvenpää", ["jarvenpaa"]]];
+    function fmiUrl(place) {
+      var end = new Date(Date.now() + 6 * 86400000); end.setUTCHours(0, 0, 0, 0);
+      return "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::edited::weather::scandinavia::point::simple&place=" + encodeURIComponent(place) + "&parameters=Temperature,Precipitation1h,WeatherSymbol3&timestep=60&endtime=" + end.toISOString().replace(/\.\d+Z$/, "Z");
+    }
+    function parseFmi(xml) {
+      var re = /<BsWfs:Time>([^<]+)<\/BsWfs:Time>\s*<BsWfs:ParameterName>([^<]+)<\/BsWfs:ParameterName>\s*<BsWfs:ParameterValue>([^<]+)<\/BsWfs:ParameterValue>/g, m, days = {};
+      var fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Helsinki", year: "numeric", month: "2-digit", day: "2-digit" });
+      while ((m = re.exec(xml))) {
+        var v = Number(m[3]); if (isNaN(v)) continue; var k = fmt.format(new Date(m[1]));
+        var d = days[k] || (days[k] = { day: k, min: 99, max: -99, prec: 0, sym: {} });
+        if (m[2] === "Temperature") { d.min = Math.min(d.min, v); d.max = Math.max(d.max, v); }
+        else if (m[2] === "Precipitation1h") d.prec += v;
+        else if (m[2] === "WeatherSymbol3") d.sym[v] = (d.sym[v] || 0) + 1;
+      }
+      return Object.keys(days).sort().map(function (k) { var d = days[k]; d.prec = Math.round(d.prec * 10) / 10; d.snow = Object.keys(d.sym).some(function (s) { s = +s; return (s >= 41 && s <= 53) || (s >= 71 && s <= 83); }) && d.prec > 0.2; return d; }).filter(function (d) { return d.max > -99; });
+    }
+    function simWeather() {
+      var out = [], base = Date.now();
+      for (var i = 0; i < 5; i++) { var k = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Helsinki", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(base + i * 86400000)); var mn = 2 - i * 1.6, mx = mn + 3; out.push({ day: k, min: mn, max: mx, prec: i === 2 ? 3.1 : 0.4, snow: i === 2, sym: {} }); }
+      return out;
+    }
+    function loadWeather() {
+      if (WX.state === "loading" || (WX.state === "ok" && Date.now() - WX.at < 30 * 60000)) return;
+      WX.state = "loading"; renderWx();
+      Promise.all(AREAS.map(function (a) { return fetch(fmiUrl(a[1])).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(parseFmi); }))
+        .then(function (res) { if (!res.every(function (r) { return r.length; })) throw new Error("empty"); WX = { state: "ok", data: res, at: Date.now(), sim: false }; renderWx(); })
+        .catch(function () { WX = { state: "ok", data: AREAS.map(simWeather), at: Date.now(), sim: true }; renderWx(); });
+    }
+    function wxIcon(d) { var s = Object.keys(d.sym).sort(function (a, b) { return d.sym[b] - d.sym[a]; })[0]; s = +s; if (d.snow) return "❄"; if (s >= 21 && s <= 33) return "☂"; if (s === 1) return "☀"; if (s === 2) return "⛅"; return "☁"; }
+    function renderWx() {
+      if (WX.state !== "ok") { $("ad-wx").innerHTML = '<p class="pn-small">' + L("Haetaan sääennustetta (Ilmatieteen laitos)…", "Fetching the forecast (Finnish Meteorological Institute)…") + "</p>"; return; }
+      var first = null;
+      WX.data.forEach(function (days, ai) { days.slice(0, 5).forEach(function (d) { if ((d.min < 0 || d.snow) && (!first || d.day < first.day)) first = { day: d.day, area: AREAS[ai][0], snow: d.snow }; }); });
+      var today = WX.data[0][0] && WX.data[0][0].day;
+      var hint = first ? '<div class="pn-hint"><b>' + L("Ruuhkapäivä tulossa?", "Busy day coming?") + "</b> " + E(first.day === today ? L("Pakkasta tai lunta jo tänään (" + first.area + ").", "Frost or snow already today (" + first.area + ").") : L("Ensimmäinen pakkas- tai lumipäivä: " + dayLabel(first.day) + " (" + first.area + ").", "First frost or snow day: " + dayLabel(first.day) + " (" + first.area + ").")) +
+        "<small>" + L("Ensimmäiset pakkas- ja lumipäivät tuovat yleensä talvirenkaiden vaihtoon jonoa. Varaa henkilöstöä ja kaikki nostimet käyttöön.", "The first frosty and snowy days usually bring queues for winter tyre changes. Plan staff and open all lifts.") + "</small></div>" : '<div class="pn-hint">' + L("Ei pakkas- tai lumipäiviä lähipäivinä.", "No frost or snow days in the next few days.") + "</div>";
+      $("ad-wx").innerHTML = hint + '<div class="pn-grid">' + WX.data.map(function (days, ai) {
+        return '<div class="pn-card"><div class="pn-site-name" style="font-size:20px">' + AREAS[ai][0] + (WX.sim ? '<span class="pn-sim">' + L("simuloitu", "simulated") + "</span>" : "") + '</div><p class="pn-small" style="margin:2px 0 0">' + AREAS[ai][2].map(siteName).join(", ") + '</p><div class="pn-wx">' +
+          days.slice(0, 5).map(function (d) { return '<div class="' + (d.min < 0 || d.snow ? "frost" : "") + '"><b>' + dayLabel(d.day).split(" ")[0] + '</b><span class="ic" aria-hidden="true">' + wxIcon(d) + '</span><span class="t">' + Math.round(d.max) + "°</span><small>" + Math.round(d.min) + "°<br>" + num(d.prec, 1) + " mm</small></div>"; }).join("") + "</div></div>";
+      }).join("") + "</div>" +
+        '<p class="pn-small" style="margin-top:12px">' + (WX.sim ? L("Sääpalvelua ei tavoitettu, joten tässä on selvästi merkitty simuloitu sää. Oikea järjestelmä hakee ennusteen palvelimella Ilmatieteen laitoksen avoimesta datasta (ilmainen, ei API-avainta).", "The weather service couldn't be reached, so this is clearly labelled simulated weather. The real system fetches the forecast server-side from FMI open data (free, no API key).")
+          : L("Lähde: Ilmatieteen laitos, avoin data (CC BY 4.0), haettu " + clk(WX.at) + ". Ilmainen, ei API-avainta. Sinisellä pakkas- tai lumipäivät.", "Source: Finnish Meteorological Institute open data (CC BY 4.0), fetched " + clk(WX.at) + ". Free, no API key. Frost or snow days in blue.")) + "</p>";
+    }
+    // ---------- log ----------
+    function renderLog() {
+      $("ad-log").innerHTML = data.log.length ? data.log.map(function (e) {
+        var site = e.site ? siteName(e.site) : L("Kaikki asemat", "All stations");
+        return "<li><time>" + clk(e.at) + "</time><span>" + E(site) + ": " + E(lang === "en" ? e.text_en : e.text) + "</span><small>" + E(lang === "en" ? e.who_en : e.who) + "</small></li>";
+      }).join("") : '<li><span class="pn-small" style="grid-column:1/-1">' + L("Ei muutoksia tänään.", "No changes today.") + "</span></li>";
+    }
+    function render() { renderOverview(); renderStations(); renderCams(); if (tab === "stats") renderStats(); if (tab === "accuracy" && !(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.rc)) renderAcc(); renderLog(); }
+    function setTab(t, quiet) {
+      tab = t; TABS.forEach(function (x) { $("ad-tab-" + x[0]).hidden = x[0] !== t; });
+      Array.prototype.forEach.call($("ad-tabs").children, function (b) { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-selected", b.dataset.tab === t); });
+      if (!quiet && token) { if (t === "stats" || t === "accuracy") { renderStats(); renderAcc(); loadHist(); } if (t === "weather") loadWeather(); }
+      if (t === "weather") renderWx();
+      var on = $("ad-tabs").querySelector(".on"); if (on && on.scrollIntoView && !quiet) on.scrollIntoView({ block: "nearest", inline: "center" });
+    }
+    $("ad-tabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { setTab(b.dataset.tab); window.scrollTo(0, 0); } };
+    $("ad-overview").onclick = function (e) { var c = e.target.closest("[data-goto]"); if (!c) return; setTab("stations"); var el = $("ad-st-" + c.dataset.goto); if (el) el.scrollIntoView({ block: "start" }); };
+    $("ad-go").onclick = login; PN.keypad($("ad-keys"), $("ad-pin"), login);
+    $("ad-logout").onclick = function () { sessionStorage.removeItem("jqAdmin"); token = null; show(); };
+    $("ad-lang").onclick = function () { lang = lang === "fi" ? "en" : "fi"; localStorage.setItem("adminLang", lang); built = {}; $("ad-stations").innerHTML = ""; texts(); if (data) render(); if (tab === "weather") renderWx(); };
+    window.JQAdminTab = setTab; window.JQAdminSub = setSub; window.JQAdminInit = function () { if (token) load(); };
+    texts(); show();
   })();
   </script><script>
     // demo: the site's own FI/EN switch also switches the widget language (page text stays Finnish in this copy)
@@ -996,19 +1767,21 @@ html { scroll-behavior: smooth; }
   </script>
 <script>
 (function () {
-  var views = { "/": "v-landing", "/etusivu": "v-etusivu", "/widget": "v-widget", "/henkilosto": "v-henkilosto" };
+  var views = { "/": "v-landing", "/etusivu": "v-etusivu", "/widget": "v-widget", "/admin": "v-admin" };
   function route() {
     var h = location.hash || "#/"; if (h.indexOf("#/") !== 0) { if (!document.querySelector(".view:not([hidden])")) show("/", ""); return; }
     var p = h.slice(1).split("?"); show(p[0], p[1] || ""); window.scrollTo(0, 0);
   }
   function show(path, q) {
-    var id = views[path] || "v-landing";
+    var id = /^\/staff\/[a-z-]+$/.test(path) ? "v-staff" : views[path] || "v-landing";
     Array.prototype.forEach.call(document.querySelectorAll(".view"), function (v) { v.hidden = v.id !== id; });
     if (id === "v-widget") {
       var site = new URLSearchParams(q).get("site"); var st = document.getElementById("stage"); st.style.maxWidth = site ? "560px" : "960px";
       st.innerHTML = '<div data-jq-widget data-mode="' + (site ? "single" : "all") + '"' + (site ? ' data-site="' + site.replace(/[^a-z-]/g, "") + '"' : "") + "></div>";
       window.JQWidgetBoot();
     }
+    if (id === "v-staff" && window.JQStaffInit) window.JQStaffInit();
+    if (id === "v-admin" && window.JQAdminInit) window.JQAdminInit();
   }
   window.addEventListener("hashchange", route); route();
 })();
